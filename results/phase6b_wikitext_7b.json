@@ -1,0 +1,17 @@
+{
+  "experiment": "phase6b_wikitext_7b",
+  "timestamp": "2026-04-12T00:28:09.888948",
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "wikitext2_complete": [
+    {"model": "GPT-2",       "baseline_ppl": 70.36, "naive4_dppl": 1.60,   "nsep_pchan4_dppl": 1.13,  "improvement": 1.4},
+    {"model": "Pythia-6.9B", "baseline_ppl": 14.08, "naive4_dppl": 22.56,  "nsep_pchan4_dppl": 1.21,  "improvement": 18.7},
+    {"model": "Qwen2-7B",    "baseline_ppl": 8.15,  "naive4_dppl": 811.61, "nsep_pchan4_dppl": 0.43,  "improvement": 1885.0}
+  ],
+  "figure1_qwen2_7b": {
+    "layer0_raw_range": [-160.4, 166.5],
+    "layer0_raw_std": 25.60,
+    "layer0_normsep_range": [-0.54, 0.77],
+    "layer0_normsep_std": 0.088,
+    "dynamic_range_compression": 289.9
+  }
+}

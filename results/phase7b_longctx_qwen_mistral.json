@@ -1,0 +1,21 @@
+{
+  "experiment": "phase7b_longctx_qwen_mistral",
+  "timestamp": "2026-04-12T02:09:59",
+  "headline": "Qwen2-7B at 4096 tokens: naive4 +8293 vs nsep+pchan4 +0.19 = 44000x improvement",
+  "qwen2_7b": {
+    "256":  {"bp": 5.45, "naive4": 1839.16, "nsep": -0.30},
+    "512":  {"bp": 6.70, "naive4": 2225.86, "nsep": 0.34},
+    "1024": {"bp": 1.74, "naive4": 207.30,  "nsep": 0.04},
+    "1536": {"bp": 5.39, "naive4": 893.95,  "nsep": 0.16},
+    "2048": {"bp": 7.98, "naive4": 1642.57, "nsep": -0.60},
+    "4096": {"bp": 3.07, "naive4": 8293.17, "nsep": 0.19}
+  },
+  "mistral_7b": {
+    "256":  {"bp": 5.40, "naive4": 0.06,  "nsep": 0.01},
+    "512":  {"bp": 3.92, "naive4": 0.10,  "nsep": 0.08},
+    "1024": {"bp": 3.67, "naive4": 0.10,  "nsep": 0.11},
+    "1536": {"bp": 3.44, "naive4": -0.12, "nsep": -0.11},
+    "2048": {"bp": 9.14, "naive4": -0.30, "nsep": -0.08},
+    "4096": {"bp": 3.36, "naive4": 0.11,  "nsep": 0.12}
+  }
+}

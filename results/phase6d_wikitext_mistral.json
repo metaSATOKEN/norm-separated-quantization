@@ -1,0 +1,11 @@
+{
+  "experiment": "phase6d_wikitext_mistral",
+  "timestamp": "2026-04-12T00:52:56.866759",
+  "mistral_7b": {
+    "baseline_ppl": 5.22,
+    "naive4_dppl": 0.10,
+    "nsep_pchan4_dppl": 0.04,
+    "improvement": 2.6,
+    "outlier_ratio": 3.1
+  }
+}

@@ -1,0 +1,3754 @@
+{
+  "experiment": "phase4_kv_cache_compression",
+  "version": "v2.0",
+  "timestamp": "2026-04-10T21:56:28.983287",
+  "model": "GPT-2",
+  "n_layers": 12,
+  "n_heads": 12,
+  "head_dim": 64,
+  "prefill_tokens": 217,
+  "continuation_tokens": 58,
+  "all_layer_sweep": [
+    {
+      "method": "pca",
+      "k": 2,
+      "head_dim": 64,
+      "per_head_compression": 32.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 149.654,
+      "delta_ppl": 129.4441,
+      "kl_divergence": 4.326353,
+      "top5_overlap": 0.0842,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.821436,
+          "value_cosine": 0.662595
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.872331,
+          "value_cosine": 0.685024
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.941734,
+          "value_cosine": 0.705114
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.937602,
+          "value_cosine": 0.601904
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.911782,
+          "value_cosine": 0.520689
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.850891,
+          "value_cosine": 0.557587
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.877401,
+          "value_cosine": 0.492838
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.85011,
+          "value_cosine": 0.505391
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.858342,
+          "value_cosine": 0.512116
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.824818,
+          "value_cosine": 0.529669
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.808094,
+          "value_cosine": 0.54905
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.75337,
+          "value_cosine": 0.578029
+        }
+      ]
+    },
+    {
+      "method": "norm_pca",
+      "k": 2,
+      "head_dim": 64,
+      "per_head_compression": 32.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 191.021,
+      "delta_ppl": 170.8112,
+      "kl_divergence": 3.637378,
+      "top5_overlap": 0.1404,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.824069,
+          "value_cosine": 0.667309
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.874592,
+          "value_cosine": 0.689195
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.944386,
+          "value_cosine": 0.711574
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.938564,
+          "value_cosine": 0.605517
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.913071,
+          "value_cosine": 0.525924
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.852225,
+          "value_cosine": 0.56209
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.878413,
+          "value_cosine": 0.497241
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.851482,
+          "value_cosine": 0.509448
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.859375,
+          "value_cosine": 0.515414
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.826314,
+          "value_cosine": 0.534248
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.809684,
+          "value_cosine": 0.552556
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.754877,
+          "value_cosine": 0.58518
+        }
+      ]
+    },
+    {
+      "method": "random",
+      "k": 2,
+      "head_dim": 64,
+      "per_head_compression": 32.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 1949.655,
+      "delta_ppl": 1929.4443,
+      "kl_divergence": 3.817498,
+      "top5_overlap": 0.1825,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.674307,
+          "value_cosine": 0.471308
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.72185,
+          "value_cosine": 0.537511
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.756809,
+          "value_cosine": 0.582023
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.819829,
+          "value_cosine": 0.487064
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.807361,
+          "value_cosine": 0.386021
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.774703,
+          "value_cosine": 0.457445
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.793334,
+          "value_cosine": 0.381718
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.776893,
+          "value_cosine": 0.390948
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.783223,
+          "value_cosine": 0.402892
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.76386,
+          "value_cosine": 0.432688
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.73583,
+          "value_cosine": 0.462546
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.683344,
+          "value_cosine": 0.482845
+        }
+      ]
+    },
+    {
+      "method": "pca",
+      "k": 4,
+      "head_dim": 64,
+      "per_head_compression": 16.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 128.324,
+      "delta_ppl": 108.1138,
+      "kl_divergence": 4.787509,
+      "top5_overlap": 0.0596,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.85964,
+          "value_cosine": 0.737708
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.910291,
+          "value_cosine": 0.753949
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.965684,
+          "value_cosine": 0.763988
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.952192,
+          "value_cosine": 0.676802
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.930332,
+          "value_cosine": 0.609981
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.876704,
+          "value_cosine": 0.635513
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.900265,
+          "value_cosine": 0.584723
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.878853,
+          "value_cosine": 0.591156
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.885997,
+          "value_cosine": 0.598094
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.858959,
+          "value_cosine": 0.606607
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.84578,
+          "value_cosine": 0.617153
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.804449,
+          "value_cosine": 0.646371
+        }
+      ]
+    },
+    {
+      "method": "norm_pca",
+      "k": 4,
+      "head_dim": 64,
+      "per_head_compression": 16.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 75.209,
+      "delta_ppl": 54.999,
+      "kl_divergence": 5.011406,
+      "top5_overlap": 0.0702,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.86106,
+          "value_cosine": 0.739775
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.911724,
+          "value_cosine": 0.756645
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.966676,
+          "value_cosine": 0.771087
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.954351,
+          "value_cosine": 0.679939
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.932468,
+          "value_cosine": 0.616019
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.878912,
+          "value_cosine": 0.640942
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.902672,
+          "value_cosine": 0.590592
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.880967,
+          "value_cosine": 0.597397
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.887628,
+          "value_cosine": 0.601576
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.86035,
+          "value_cosine": 0.61205
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.847419,
+          "value_cosine": 0.622736
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.806386,
+          "value_cosine": 0.652154
+        }
+      ]
+    },
+    {
+      "method": "random",
+      "k": 4,
+      "head_dim": 64,
+      "per_head_compression": 16.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 1892.287,
+      "delta_ppl": 1872.0765,
+      "kl_divergence": 3.806066,
+      "top5_overlap": 0.186,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.688911,
+          "value_cosine": 0.497144
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.729798,
+          "value_cosine": 0.556824
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.765183,
+          "value_cosine": 0.597152
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.825316,
+          "value_cosine": 0.514091
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.814902,
+          "value_cosine": 0.416946
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.78126,
+          "value_cosine": 0.484331
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.799761,
+          "value_cosine": 0.413566
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.783442,
+          "value_cosine": 0.426772
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.790459,
+          "value_cosine": 0.432154
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.772803,
+          "value_cosine": 0.45781
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.744478,
+          "value_cosine": 0.486471
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.693062,
+          "value_cosine": 0.509157
+        }
+      ]
+    },
+    {
+      "method": "pca",
+      "k": 8,
+      "head_dim": 64,
+      "per_head_compression": 8.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 78.785,
+      "delta_ppl": 58.5746,
+      "kl_divergence": 5.416154,
+      "top5_overlap": 0.0561,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.896066,
+          "value_cosine": 0.810335
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.943549,
+          "value_cosine": 0.826797
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.977723,
+          "value_cosine": 0.827379
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.966369,
+          "value_cosine": 0.764077
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.950831,
+          "value_cosine": 0.714797
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.909637,
+          "value_cosine": 0.735482
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.927124,
+          "value_cosine": 0.702304
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.91298,
+          "value_cosine": 0.701379
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.918891,
+          "value_cosine": 0.704767
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.900324,
+          "value_cosine": 0.704955
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.892872,
+          "value_cosine": 0.708401
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.866226,
+          "value_cosine": 0.730426
+        }
+      ]
+    },
+    {
+      "method": "norm_pca",
+      "k": 8,
+      "head_dim": 64,
+      "per_head_compression": 8.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 57.946,
+      "delta_ppl": 37.7355,
+      "kl_divergence": 5.790239,
+      "top5_overlap": 0.0737,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.89732,
+          "value_cosine": 0.813402
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.944235,
+          "value_cosine": 0.830783
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.978472,
+          "value_cosine": 0.834668
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.967784,
+          "value_cosine": 0.768729
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.952711,
+          "value_cosine": 0.722521
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.912564,
+          "value_cosine": 0.740815
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.930077,
+          "value_cosine": 0.707821
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.91569,
+          "value_cosine": 0.707751
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.92093,
+          "value_cosine": 0.709777
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.902099,
+          "value_cosine": 0.712432
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.894452,
+          "value_cosine": 0.717208
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.867208,
+          "value_cosine": 0.73737
+        }
+      ]
+    },
+    {
+      "method": "random",
+      "k": 8,
+      "head_dim": 64,
+      "per_head_compression": 8.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 1964.751,
+      "delta_ppl": 1944.5408,
+      "kl_divergence": 3.82972,
+      "top5_overlap": 0.1825,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.717174,
+          "value_cosine": 0.544977
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.751014,
+          "value_cosine": 0.598244
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.775152,
+          "value_cosine": 0.630366
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.837197,
+          "value_cosine": 0.559308
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.827798,
+          "value_cosine": 0.482582
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.794405,
+          "value_cosine": 0.535171
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.81481,
+          "value_cosine": 0.47532
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.799141,
+          "value_cosine": 0.486581
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.80573,
+          "value_cosine": 0.490863
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.789443,
+          "value_cosine": 0.516467
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.765955,
+          "value_cosine": 0.535654
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.716797,
+          "value_cosine": 0.557298
+        }
+      ]
+    },
+    {
+      "method": "pca",
+      "k": 16,
+      "head_dim": 64,
+      "per_head_compression": 4.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 42.094,
+      "delta_ppl": 21.8835,
+      "kl_divergence": 6.171281,
+      "top5_overlap": 0.0737,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.937567,
+          "value_cosine": 0.88654
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.968875,
+          "value_cosine": 0.899711
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.987357,
+          "value_cosine": 0.897071
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.979876,
+          "value_cosine": 0.861792
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.970707,
+          "value_cosine": 0.828888
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.945523,
+          "value_cosine": 0.841623
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.956863,
+          "value_cosine": 0.822557
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.948873,
+          "value_cosine": 0.820783
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.953113,
+          "value_cosine": 0.821295
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.941716,
+          "value_cosine": 0.818329
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.938368,
+          "value_cosine": 0.818665
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.924112,
+          "value_cosine": 0.831195
+        }
+      ]
+    },
+    {
+      "method": "norm_pca",
+      "k": 16,
+      "head_dim": 64,
+      "per_head_compression": 4.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 23.364,
+      "delta_ppl": 3.1537,
+      "kl_divergence": 6.654803,
+      "top5_overlap": 0.0737,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.938583,
+          "value_cosine": 0.889645
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.969367,
+          "value_cosine": 0.90309
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.987884,
+          "value_cosine": 0.903159
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.980695,
+          "value_cosine": 0.865472
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.972108,
+          "value_cosine": 0.835669
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.948685,
+          "value_cosine": 0.846866
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.959187,
+          "value_cosine": 0.82855
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.951501,
+          "value_cosine": 0.827176
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.955245,
+          "value_cosine": 0.827181
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.943821,
+          "value_cosine": 0.82622
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.939868,
+          "value_cosine": 0.826654
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.925192,
+          "value_cosine": 0.838098
+        }
+      ]
+    },
+    {
+      "method": "random",
+      "k": 16,
+      "head_dim": 64,
+      "per_head_compression": 4.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 1518.189,
+      "delta_ppl": 1497.9788,
+      "kl_divergence": 3.748823,
+      "top5_overlap": 0.1789,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.753633,
+          "value_cosine": 0.627324
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.790952,
+          "value_cosine": 0.667399
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.811077,
+          "value_cosine": 0.692175
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.861275,
+          "value_cosine": 0.638982
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.850111,
+          "value_cosine": 0.579708
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.827359,
+          "value_cosine": 0.621658
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.844395,
+          "value_cosine": 0.579296
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.831036,
+          "value_cosine": 0.587703
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.837372,
+          "value_cosine": 0.592036
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.82183,
+          "value_cosine": 0.606999
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.801396,
+          "value_cosine": 0.624336
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.764094,
+          "value_cosine": 0.637254
+        }
+      ]
+    },
+    {
+      "method": "pca",
+      "k": 32,
+      "head_dim": 64,
+      "per_head_compression": 2.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 30.878,
+      "delta_ppl": 10.6681,
+      "kl_divergence": 6.358474,
+      "top5_overlap": 0.0702,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.977503,
+          "value_cosine": 0.959369
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.989577,
+          "value_cosine": 0.964357
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.995674,
+          "value_cosine": 0.962141
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.992381,
+          "value_cosine": 0.948829
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.98914,
+          "value_cosine": 0.934784
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.979499,
+          "value_cosine": 0.938954
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.984363,
+          "value_cosine": 0.931251
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.981499,
+          "value_cosine": 0.930886
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.983272,
+          "value_cosine": 0.930188
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.978764,
+          "value_cosine": 0.927916
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.977482,
+          "value_cosine": 0.927906
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.972375,
+          "value_cosine": 0.932405
+        }
+      ]
+    },
+    {
+      "method": "norm_pca",
+      "k": 32,
+      "head_dim": 64,
+      "per_head_compression": 2.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 21.797,
+      "delta_ppl": 1.587,
+      "kl_divergence": 6.999014,
+      "top5_overlap": 0.0737,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.978052,
+          "value_cosine": 0.960744
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.989789,
+          "value_cosine": 0.966276
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.995864,
+          "value_cosine": 0.965503
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.992755,
+          "value_cosine": 0.951072
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.989705,
+          "value_cosine": 0.938818
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.981054,
+          "value_cosine": 0.942577
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.98501,
+          "value_cosine": 0.935779
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.982321,
+          "value_cosine": 0.935419
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.98387,
+          "value_cosine": 0.935151
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.979581,
+          "value_cosine": 0.933399
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.978146,
+          "value_cosine": 0.932776
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.972845,
+          "value_cosine": 0.937028
+        }
+      ]
+    },
+    {
+      "method": "random",
+      "k": 32,
+      "head_dim": 64,
+      "per_head_compression": 2.0,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 507.605,
+      "delta_ppl": 487.3944,
+      "kl_divergence": 3.474732,
+      "top5_overlap": 0.1649,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.845079,
+          "value_cosine": 0.770246
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.86488,
+          "value_cosine": 0.793405
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.880336,
+          "value_cosine": 0.806306
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.90722,
+          "value_cosine": 0.777319
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.905792,
+          "value_cosine": 0.746488
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.886579,
+          "value_cosine": 0.768918
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.898995,
+          "value_cosine": 0.743332
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.893356,
+          "value_cosine": 0.752735
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.891619,
+          "value_cosine": 0.753901
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.881196,
+          "value_cosine": 0.758654
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.870894,
+          "value_cosine": 0.768153
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.846873,
+          "value_cosine": 0.778392
+        }
+      ]
+    },
+    {
+      "method": "pca",
+      "k": 48,
+      "head_dim": 64,
+      "per_head_compression": 1.33,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 28.861,
+      "delta_ppl": 8.6505,
+      "kl_divergence": 6.594734,
+      "top5_overlap": 0.0737,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.994196,
+          "value_cosine": 0.989452
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.997496,
+          "value_cosine": 0.990764
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.998952,
+          "value_cosine": 0.989741
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.997925,
+          "value_cosine": 0.985483
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.997011,
+          "value_cosine": 0.980178
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.994349,
+          "value_cosine": 0.981341
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.995645,
+          "value_cosine": 0.978214
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.994836,
+          "value_cosine": 0.97858
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.99531,
+          "value_cosine": 0.978257
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.994159,
+          "value_cosine": 0.9768
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.99368,
+          "value_cosine": 0.977671
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.992351,
+          "value_cosine": 0.978894
+        }
+      ]
+    },
+    {
+      "method": "norm_pca",
+      "k": 48,
+      "head_dim": 64,
+      "per_head_compression": 1.33,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 20.857,
+      "delta_ppl": 0.6463,
+      "kl_divergence": 7.042007,
+      "top5_overlap": 0.0737,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.994364,
+          "value_cosine": 0.989858
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.997557,
+          "value_cosine": 0.991315
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.999009,
+          "value_cosine": 0.991034
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.998025,
+          "value_cosine": 0.986618
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.997124,
+          "value_cosine": 0.982443
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.994784,
+          "value_cosine": 0.983592
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.995798,
+          "value_cosine": 0.981417
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.99504,
+          "value_cosine": 0.981638
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.995469,
+          "value_cosine": 0.981531
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.994356,
+          "value_cosine": 0.98046
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.993873,
+          "value_cosine": 0.980092
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.992503,
+          "value_cosine": 0.98127
+        }
+      ]
+    },
+    {
+      "method": "random",
+      "k": 48,
+      "head_dim": 64,
+      "per_head_compression": 1.33,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 49.154,
+      "delta_ppl": 28.9435,
+      "kl_divergence": 5.062907,
+      "top5_overlap": 0.0842,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.925959,
+          "value_cosine": 0.892449
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.937918,
+          "value_cosine": 0.905341
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.935002,
+          "value_cosine": 0.905377
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.95142,
+          "value_cosine": 0.897944
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.950932,
+          "value_cosine": 0.884016
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.942429,
+          "value_cosine": 0.89216
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.950035,
+          "value_cosine": 0.881827
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.946944,
+          "value_cosine": 0.881209
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.945209,
+          "value_cosine": 0.882752
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.942809,
+          "value_cosine": 0.886246
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.940324,
+          "value_cosine": 0.889595
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.928,
+          "value_cosine": 0.896833
+        }
+      ]
+    },
+    {
+      "method": "pca",
+      "k": 56,
+      "head_dim": 64,
+      "per_head_compression": 1.14,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 25.571,
+      "delta_ppl": 5.3603,
+      "kl_divergence": 6.729825,
+      "top5_overlap": 0.0737,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.998089,
+          "value_cosine": 0.996558
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.999219,
+          "value_cosine": 0.996945
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.999685,
+          "value_cosine": 0.996494
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.999305,
+          "value_cosine": 0.9945
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.998955,
+          "value_cosine": 0.992306
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.998046,
+          "value_cosine": 0.992711
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.998456,
+          "value_cosine": 0.990948
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.998176,
+          "value_cosine": 0.991165
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.998376,
+          "value_cosine": 0.990955
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.997975,
+          "value_cosine": 0.990135
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.997766,
+          "value_cosine": 0.99124
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.997344,
+          "value_cosine": 0.99162
+        }
+      ]
+    },
+    {
+      "method": "norm_pca",
+      "k": 56,
+      "head_dim": 64,
+      "per_head_compression": 1.14,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 20.707,
+      "delta_ppl": 0.4969,
+      "kl_divergence": 7.069829,
+      "top5_overlap": 0.0807,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.998169,
+          "value_cosine": 0.996658
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.999239,
+          "value_cosine": 0.997148
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.999701,
+          "value_cosine": 0.996994
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.999333,
+          "value_cosine": 0.99527
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.998994,
+          "value_cosine": 0.993655
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.998185,
+          "value_cosine": 0.994192
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.998513,
+          "value_cosine": 0.993324
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.998258,
+          "value_cosine": 0.993467
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.998438,
+          "value_cosine": 0.993317
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.99805,
+          "value_cosine": 0.992874
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.997842,
+          "value_cosine": 0.992718
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.99741,
+          "value_cosine": 0.993104
+        }
+      ]
+    },
+    {
+      "method": "random",
+      "k": 56,
+      "head_dim": 64,
+      "per_head_compression": 1.14,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 25.869,
+      "delta_ppl": 5.6588,
+      "kl_divergence": 6.619061,
+      "top5_overlap": 0.0807,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.963096,
+          "value_cosine": 0.946197
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.967721,
+          "value_cosine": 0.947923
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.968804,
+          "value_cosine": 0.95342
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.978581,
+          "value_cosine": 0.950978
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.973453,
+          "value_cosine": 0.941188
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.972159,
+          "value_cosine": 0.948807
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.97478,
+          "value_cosine": 0.943442
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.972953,
+          "value_cosine": 0.944652
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.975366,
+          "value_cosine": 0.943653
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.972302,
+          "value_cosine": 0.944349
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.968911,
+          "value_cosine": 0.945366
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.965435,
+          "value_cosine": 0.947259
+        }
+      ]
+    },
+    {
+      "method": "pca",
+      "k": 60,
+      "head_dim": 64,
+      "per_head_compression": 1.07,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 23.077,
+      "delta_ppl": 2.8665,
+      "kl_divergence": 6.792131,
+      "top5_overlap": 0.0772,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.999269,
+          "value_cosine": 0.998721
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.999712,
+          "value_cosine": 0.998876
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.999885,
+          "value_cosine": 0.998632
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.999736,
+          "value_cosine": 0.997698
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.999591,
+          "value_cosine": 0.996422
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.999257,
+          "value_cosine": 0.996739
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.999398,
+          "value_cosine": 0.995734
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.999278,
+          "value_cosine": 0.995713
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.999382,
+          "value_cosine": 0.995316
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.999234,
+          "value_cosine": 0.995277
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.999125,
+          "value_cosine": 0.996095
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.998972,
+          "value_cosine": 0.996209
+        }
+      ]
+    },
+    {
+      "method": "norm_pca",
+      "k": 60,
+      "head_dim": 64,
+      "per_head_compression": 1.07,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 20.678,
+      "delta_ppl": 0.4682,
+      "kl_divergence": 7.068557,
+      "top5_overlap": 0.0807,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.999309,
+          "value_cosine": 0.998733
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.999721,
+          "value_cosine": 0.998939
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.999893,
+          "value_cosine": 0.99885
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.999744,
+          "value_cosine": 0.998126
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.999607,
+          "value_cosine": 0.997406
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.999301,
+          "value_cosine": 0.997697
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.999423,
+          "value_cosine": 0.99729
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.999311,
+          "value_cosine": 0.997382
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.999404,
+          "value_cosine": 0.997298
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.999261,
+          "value_cosine": 0.997089
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.999154,
+          "value_cosine": 0.997038
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.998999,
+          "value_cosine": 0.997171
+        }
+      ]
+    },
+    {
+      "method": "random",
+      "k": 60,
+      "head_dim": 64,
+      "per_head_compression": 1.07,
+      "compress_layers": null,
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 22.509,
+      "delta_ppl": 2.2991,
+      "kl_divergence": 6.673936,
+      "top5_overlap": 0.0807,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.980144,
+          "value_cosine": 0.976849
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.981358,
+          "value_cosine": 0.977732
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.984113,
+          "value_cosine": 0.975746
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.990088,
+          "value_cosine": 0.975878
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.987931,
+          "value_cosine": 0.972389
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.984653,
+          "value_cosine": 0.975456
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.987032,
+          "value_cosine": 0.971762
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.985323,
+          "value_cosine": 0.969774
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.986968,
+          "value_cosine": 0.971184
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.985354,
+          "value_cosine": 0.972954
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.984607,
+          "value_cosine": 0.972787
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.98257,
+          "value_cosine": 0.974585
+        }
+      ]
+    }
+  ],
+  "selective_compression": [
+    {
+      "method": "pca",
+      "k": 4,
+      "head_dim": 64,
+      "per_head_compression": 16.0,
+      "compress_layers": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "n_layers_compressed": 6,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 90.656,
+      "delta_ppl": 70.4462,
+      "kl_divergence": 5.858821,
+      "top5_overlap": 0.0386,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 2,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.952192,
+          "value_cosine": 0.676802
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.930332,
+          "value_cosine": 0.609981
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.876704,
+          "value_cosine": 0.635513
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.900265,
+          "value_cosine": 0.584723
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.878853,
+          "value_cosine": 0.591156
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.885997,
+          "value_cosine": 0.598094
+        },
+        {
+          "layer": 9,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 10,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "mid_only",
+      "config_desc": "L3-L8 (6 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 4,
+      "head_dim": 64,
+      "per_head_compression": 16.0,
+      "compress_layers": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "n_layers_compressed": 8,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 108.037,
+      "delta_ppl": 87.8268,
+      "kl_divergence": 5.590495,
+      "top5_overlap": 0.0561,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.965684,
+          "value_cosine": 0.763988
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.952192,
+          "value_cosine": 0.676802
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.930332,
+          "value_cosine": 0.609981
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.876704,
+          "value_cosine": 0.635513
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.900265,
+          "value_cosine": 0.584723
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.878853,
+          "value_cosine": 0.591156
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.885997,
+          "value_cosine": 0.598094
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.858959,
+          "value_cosine": 0.606607
+        },
+        {
+          "layer": 10,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "mid_wide",
+      "config_desc": "L2-L9 (8 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 4,
+      "head_dim": 64,
+      "per_head_compression": 16.0,
+      "compress_layers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "n_layers_compressed": 10,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 119.088,
+      "delta_ppl": 98.8773,
+      "kl_divergence": 5.285891,
+      "top5_overlap": 0.0632,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.910291,
+          "value_cosine": 0.753949
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.965684,
+          "value_cosine": 0.763988
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.952192,
+          "value_cosine": 0.676802
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.930332,
+          "value_cosine": 0.609981
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.876704,
+          "value_cosine": 0.635513
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.900265,
+          "value_cosine": 0.584723
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.878853,
+          "value_cosine": 0.591156
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.885997,
+          "value_cosine": 0.598094
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.858959,
+          "value_cosine": 0.606607
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.84578,
+          "value_cosine": 0.617153
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "skip_edges",
+      "config_desc": "L1-L10 (10 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 4,
+      "head_dim": 64,
+      "per_head_compression": 16.0,
+      "compress_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 128.324,
+      "delta_ppl": 108.1138,
+      "kl_divergence": 4.787509,
+      "top5_overlap": 0.0596,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.85964,
+          "value_cosine": 0.737708
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.910291,
+          "value_cosine": 0.753949
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.965684,
+          "value_cosine": 0.763988
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.952192,
+          "value_cosine": 0.676802
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.930332,
+          "value_cosine": 0.609981
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.876704,
+          "value_cosine": 0.635513
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.900265,
+          "value_cosine": 0.584723
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.878853,
+          "value_cosine": 0.591156
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.885997,
+          "value_cosine": 0.598094
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.858959,
+          "value_cosine": 0.606607
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.84578,
+          "value_cosine": 0.617153
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.804449,
+          "value_cosine": 0.646371
+        }
+      ],
+      "config_name": "all",
+      "config_desc": "all 12 layers"
+    },
+    {
+      "method": "pca",
+      "k": 8,
+      "head_dim": 64,
+      "per_head_compression": 8.0,
+      "compress_layers": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "n_layers_compressed": 6,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 58.787,
+      "delta_ppl": 38.5764,
+      "kl_divergence": 6.61582,
+      "top5_overlap": 0.0491,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 2,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.966369,
+          "value_cosine": 0.764077
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.950831,
+          "value_cosine": 0.714797
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.909637,
+          "value_cosine": 0.735482
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.927124,
+          "value_cosine": 0.702304
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.91298,
+          "value_cosine": 0.701379
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.918891,
+          "value_cosine": 0.704767
+        },
+        {
+          "layer": 9,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 10,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "mid_only",
+      "config_desc": "L3-L8 (6 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 8,
+      "head_dim": 64,
+      "per_head_compression": 8.0,
+      "compress_layers": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "n_layers_compressed": 8,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 60.007,
+      "delta_ppl": 39.7966,
+      "kl_divergence": 6.491143,
+      "top5_overlap": 0.0491,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.977723,
+          "value_cosine": 0.827379
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.966369,
+          "value_cosine": 0.764077
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.950831,
+          "value_cosine": 0.714797
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.909637,
+          "value_cosine": 0.735482
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.927124,
+          "value_cosine": 0.702304
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.91298,
+          "value_cosine": 0.701379
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.918891,
+          "value_cosine": 0.704767
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.900324,
+          "value_cosine": 0.704955
+        },
+        {
+          "layer": 10,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "mid_wide",
+      "config_desc": "L2-L9 (8 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 8,
+      "head_dim": 64,
+      "per_head_compression": 8.0,
+      "compress_layers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "n_layers_compressed": 10,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 65.427,
+      "delta_ppl": 45.2167,
+      "kl_divergence": 6.071463,
+      "top5_overlap": 0.0596,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.943549,
+          "value_cosine": 0.826797
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.977723,
+          "value_cosine": 0.827379
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.966369,
+          "value_cosine": 0.764077
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.950831,
+          "value_cosine": 0.714797
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.909637,
+          "value_cosine": 0.735482
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.927124,
+          "value_cosine": 0.702304
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.91298,
+          "value_cosine": 0.701379
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.918891,
+          "value_cosine": 0.704767
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.900324,
+          "value_cosine": 0.704955
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.892872,
+          "value_cosine": 0.708401
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "skip_edges",
+      "config_desc": "L1-L10 (10 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 8,
+      "head_dim": 64,
+      "per_head_compression": 8.0,
+      "compress_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 78.785,
+      "delta_ppl": 58.5746,
+      "kl_divergence": 5.416154,
+      "top5_overlap": 0.0561,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.896066,
+          "value_cosine": 0.810335
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.943549,
+          "value_cosine": 0.826797
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.977723,
+          "value_cosine": 0.827379
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.966369,
+          "value_cosine": 0.764077
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.950831,
+          "value_cosine": 0.714797
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.909637,
+          "value_cosine": 0.735482
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.927124,
+          "value_cosine": 0.702304
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.91298,
+          "value_cosine": 0.701379
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.918891,
+          "value_cosine": 0.704767
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.900324,
+          "value_cosine": 0.704955
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.892872,
+          "value_cosine": 0.708401
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.866226,
+          "value_cosine": 0.730426
+        }
+      ],
+      "config_name": "all",
+      "config_desc": "all 12 layers"
+    },
+    {
+      "method": "pca",
+      "k": 16,
+      "head_dim": 64,
+      "per_head_compression": 4.0,
+      "compress_layers": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "n_layers_compressed": 6,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 34.72,
+      "delta_ppl": 14.5102,
+      "kl_divergence": 6.764915,
+      "top5_overlap": 0.0596,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 2,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.979876,
+          "value_cosine": 0.861792
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.970707,
+          "value_cosine": 0.828888
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.945523,
+          "value_cosine": 0.841623
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.956863,
+          "value_cosine": 0.822557
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.948873,
+          "value_cosine": 0.820783
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.953113,
+          "value_cosine": 0.821295
+        },
+        {
+          "layer": 9,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 10,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "mid_only",
+      "config_desc": "L3-L8 (6 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 16,
+      "head_dim": 64,
+      "per_head_compression": 4.0,
+      "compress_layers": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "n_layers_compressed": 8,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 36.012,
+      "delta_ppl": 15.802,
+      "kl_divergence": 6.864974,
+      "top5_overlap": 0.0561,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.987357,
+          "value_cosine": 0.897071
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.979876,
+          "value_cosine": 0.861792
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.970707,
+          "value_cosine": 0.828888
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.945523,
+          "value_cosine": 0.841623
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.956863,
+          "value_cosine": 0.822557
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.948873,
+          "value_cosine": 0.820783
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.953113,
+          "value_cosine": 0.821295
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.941716,
+          "value_cosine": 0.818329
+        },
+        {
+          "layer": 10,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "mid_wide",
+      "config_desc": "L2-L9 (8 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 16,
+      "head_dim": 64,
+      "per_head_compression": 4.0,
+      "compress_layers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "n_layers_compressed": 10,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 36.154,
+      "delta_ppl": 15.9434,
+      "kl_divergence": 6.451987,
+      "top5_overlap": 0.0632,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.968875,
+          "value_cosine": 0.899711
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.987357,
+          "value_cosine": 0.897071
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.979876,
+          "value_cosine": 0.861792
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.970707,
+          "value_cosine": 0.828888
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.945523,
+          "value_cosine": 0.841623
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.956863,
+          "value_cosine": 0.822557
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.948873,
+          "value_cosine": 0.820783
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.953113,
+          "value_cosine": 0.821295
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.941716,
+          "value_cosine": 0.818329
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.938368,
+          "value_cosine": 0.818665
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "skip_edges",
+      "config_desc": "L1-L10 (10 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 16,
+      "head_dim": 64,
+      "per_head_compression": 4.0,
+      "compress_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 42.094,
+      "delta_ppl": 21.8835,
+      "kl_divergence": 6.171281,
+      "top5_overlap": 0.0737,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.937567,
+          "value_cosine": 0.88654
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.968875,
+          "value_cosine": 0.899711
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.987357,
+          "value_cosine": 0.897071
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.979876,
+          "value_cosine": 0.861792
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.970707,
+          "value_cosine": 0.828888
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.945523,
+          "value_cosine": 0.841623
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.956863,
+          "value_cosine": 0.822557
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.948873,
+          "value_cosine": 0.820783
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.953113,
+          "value_cosine": 0.821295
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.941716,
+          "value_cosine": 0.818329
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.938368,
+          "value_cosine": 0.818665
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.924112,
+          "value_cosine": 0.831195
+        }
+      ],
+      "config_name": "all",
+      "config_desc": "all 12 layers"
+    },
+    {
+      "method": "pca",
+      "k": 32,
+      "head_dim": 64,
+      "per_head_compression": 2.0,
+      "compress_layers": [
+        3,
+        4,
+        5,
+        6,
+        7,
+        8
+      ],
+      "n_layers_compressed": 6,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 26.614,
+      "delta_ppl": 6.4036,
+      "kl_divergence": 6.574941,
+      "top5_overlap": 0.0667,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 2,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.992381,
+          "value_cosine": 0.948829
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.98914,
+          "value_cosine": 0.934784
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.979499,
+          "value_cosine": 0.938954
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.984363,
+          "value_cosine": 0.931251
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.981499,
+          "value_cosine": 0.930886
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.983272,
+          "value_cosine": 0.930188
+        },
+        {
+          "layer": 9,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 10,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "mid_only",
+      "config_desc": "L3-L8 (6 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 32,
+      "head_dim": 64,
+      "per_head_compression": 2.0,
+      "compress_layers": [
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9
+      ],
+      "n_layers_compressed": 8,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 27.72,
+      "delta_ppl": 7.5102,
+      "kl_divergence": 6.646875,
+      "top5_overlap": 0.0702,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.995674,
+          "value_cosine": 0.962141
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.992381,
+          "value_cosine": 0.948829
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.98914,
+          "value_cosine": 0.934784
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.979499,
+          "value_cosine": 0.938954
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.984363,
+          "value_cosine": 0.931251
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.981499,
+          "value_cosine": 0.930886
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.983272,
+          "value_cosine": 0.930188
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.978764,
+          "value_cosine": 0.927916
+        },
+        {
+          "layer": 10,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "mid_wide",
+      "config_desc": "L2-L9 (8 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 32,
+      "head_dim": 64,
+      "per_head_compression": 2.0,
+      "compress_layers": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10
+      ],
+      "n_layers_compressed": 10,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 29.25,
+      "delta_ppl": 9.0394,
+      "kl_divergence": 6.448686,
+      "top5_overlap": 0.0702,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.989577,
+          "value_cosine": 0.964357
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.995674,
+          "value_cosine": 0.962141
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.992381,
+          "value_cosine": 0.948829
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.98914,
+          "value_cosine": 0.934784
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.979499,
+          "value_cosine": 0.938954
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.984363,
+          "value_cosine": 0.931251
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.981499,
+          "value_cosine": 0.930886
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.983272,
+          "value_cosine": 0.930188
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.978764,
+          "value_cosine": 0.927916
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.977482,
+          "value_cosine": 0.927906
+        },
+        {
+          "layer": 11,
+          "compressed": false,
+          "key_cosine": 1.0,
+          "value_cosine": 1.0
+        }
+      ],
+      "config_name": "skip_edges",
+      "config_desc": "L1-L10 (10 layers)"
+    },
+    {
+      "method": "pca",
+      "k": 32,
+      "head_dim": 64,
+      "per_head_compression": 2.0,
+      "compress_layers": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11
+      ],
+      "n_layers_compressed": 12,
+      "n_layers_total": 12,
+      "baseline_ppl": 20.21,
+      "compressed_ppl": 30.878,
+      "delta_ppl": 10.6681,
+      "kl_divergence": 6.358474,
+      "top5_overlap": 0.0702,
+      "cache_cosines": [
+        {
+          "layer": 0,
+          "compressed": true,
+          "key_cosine": 0.977503,
+          "value_cosine": 0.959369
+        },
+        {
+          "layer": 1,
+          "compressed": true,
+          "key_cosine": 0.989577,
+          "value_cosine": 0.964357
+        },
+        {
+          "layer": 2,
+          "compressed": true,
+          "key_cosine": 0.995674,
+          "value_cosine": 0.962141
+        },
+        {
+          "layer": 3,
+          "compressed": true,
+          "key_cosine": 0.992381,
+          "value_cosine": 0.948829
+        },
+        {
+          "layer": 4,
+          "compressed": true,
+          "key_cosine": 0.98914,
+          "value_cosine": 0.934784
+        },
+        {
+          "layer": 5,
+          "compressed": true,
+          "key_cosine": 0.979499,
+          "value_cosine": 0.938954
+        },
+        {
+          "layer": 6,
+          "compressed": true,
+          "key_cosine": 0.984363,
+          "value_cosine": 0.931251
+        },
+        {
+          "layer": 7,
+          "compressed": true,
+          "key_cosine": 0.981499,
+          "value_cosine": 0.930886
+        },
+        {
+          "layer": 8,
+          "compressed": true,
+          "key_cosine": 0.983272,
+          "value_cosine": 0.930188
+        },
+        {
+          "layer": 9,
+          "compressed": true,
+          "key_cosine": 0.978764,
+          "value_cosine": 0.927916
+        },
+        {
+          "layer": 10,
+          "compressed": true,
+          "key_cosine": 0.977482,
+          "value_cosine": 0.927906
+        },
+        {
+          "layer": 11,
+          "compressed": true,
+          "key_cosine": 0.972375,
+          "value_cosine": 0.932405
+        }
+      ],
+      "config_name": "all",
+      "config_desc": "all 12 layers"
+    }
+  ],
+  "gate5": {
+    "decision": "NO-GO",
+    "criteria": {
+      "viable_3x": {
+        "threshold": ">= 3x compression with |ΔPPL| < 1.0",
+        "result": false,
+        "configs": []
+      },
+      "pca_advantage": {
+        "threshold": "PCA > random in >50%",
+        "result": true,
+        "pca_win_rate": 0.875,
+        "wins": 7,
+        "total": 8
+      },
+      "quality_at_3x": {
+        "threshold": "ΔPPL < 5.0 at 3x+",
+        "result": false,
+        "best": {
+          "k": 16,
+          "compression": 4.0,
+          "delta_ppl": 21.8835
+        }
+      }
+    }
+  },
+  "elapsed_seconds": 22.7
+}

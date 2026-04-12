@@ -1,0 +1,601 @@
+{
+  "experiment": "phase4b_cross_model",
+  "version": "v2.0",
+  "timestamp": "2026-04-10T22:23:32.751214",
+  "models": [
+    {
+      "model": "GPT-2",
+      "hf_id": "gpt2",
+      "n_layers": 12,
+      "n_kv_heads": 12,
+      "head_dim": 64,
+      "prefill_tokens": 217,
+      "continuation_tokens": 58,
+      "baseline_ppl": 20.21,
+      "finding1_pca_comparison": [
+        {
+          "k": 8,
+          "pca": 58.5746,
+          "norm_pca": 37.7355,
+          "random": 1944.5408,
+          "norm_pca_advantage": 1.55
+        },
+        {
+          "k": 16,
+          "pca": 21.8835,
+          "norm_pca": 3.1537,
+          "random": 1497.9788,
+          "norm_pca_advantage": 6.94
+        },
+        {
+          "k": 32,
+          "pca": 10.6681,
+          "norm_pca": 1.587,
+          "random": 487.3944,
+          "norm_pca_advantage": 6.72
+        },
+        {
+          "k": 48,
+          "pca": 8.6505,
+          "norm_pca": 0.6463,
+          "random": 28.9435,
+          "norm_pca_advantage": 13.38
+        }
+      ],
+      "finding2_quantization": [
+        {
+          "bits": 8,
+          "naive": 0.5328,
+          "norm_sep": 0.5317,
+          "advantage": 1.002
+        },
+        {
+          "bits": 4,
+          "naive": 0.6414,
+          "norm_sep": 0.563,
+          "advantage": 1.139
+        },
+        {
+          "bits": 3,
+          "naive": 1.5331,
+          "norm_sep": 1.2363,
+          "advantage": 1.24
+        },
+        {
+          "bits": 2,
+          "naive": 57.5855,
+          "norm_sep": 45.0405,
+          "advantage": 1.279
+        }
+      ],
+      "finding3_kv_asymmetry": {
+        "key_mean_cosine": 0.956011,
+        "value_mean_cosine": 0.851482,
+        "key_gt_value_layers": 12,
+        "total_layers": 12,
+        "per_layer": [
+          {
+            "layer": 0,
+            "key_cosine": 0.938583,
+            "value_cosine": 0.889645
+          },
+          {
+            "layer": 1,
+            "key_cosine": 0.969367,
+            "value_cosine": 0.90309
+          },
+          {
+            "layer": 2,
+            "key_cosine": 0.987884,
+            "value_cosine": 0.903159
+          },
+          {
+            "layer": 3,
+            "key_cosine": 0.980695,
+            "value_cosine": 0.865472
+          },
+          {
+            "layer": 4,
+            "key_cosine": 0.972108,
+            "value_cosine": 0.835669
+          },
+          {
+            "layer": 5,
+            "key_cosine": 0.948685,
+            "value_cosine": 0.846866
+          },
+          {
+            "layer": 6,
+            "key_cosine": 0.959187,
+            "value_cosine": 0.82855
+          },
+          {
+            "layer": 7,
+            "key_cosine": 0.951501,
+            "value_cosine": 0.827176
+          },
+          {
+            "layer": 8,
+            "key_cosine": 0.955245,
+            "value_cosine": 0.827181
+          },
+          {
+            "layer": 9,
+            "key_cosine": 0.943821,
+            "value_cosine": 0.82622
+          },
+          {
+            "layer": 10,
+            "key_cosine": 0.939868,
+            "value_cosine": 0.826654
+          },
+          {
+            "layer": 11,
+            "key_cosine": 0.925192,
+            "value_cosine": 0.838098
+          }
+        ]
+      },
+      "finding4_combos": [
+        {
+          "label": "norm_sep INT4",
+          "delta_ppl": 0.563,
+          "top5": 0.0772
+        },
+        {
+          "label": "norm_pca(K32V48)+K4V8",
+          "delta_ppl": 0.9603,
+          "top5": 0.0702
+        },
+        {
+          "label": "norm_pca(K16V48)+INT8",
+          "delta_ppl": 2.4186,
+          "top5": 0.0772
+        },
+        {
+          "label": "naive INT4",
+          "delta_ppl": 0.6414,
+          "top5": 0.0772
+        }
+      ]
+    },
+    {
+      "model": "Pythia-410M",
+      "hf_id": "EleutherAI/pythia-410m",
+      "n_layers": 24,
+      "n_kv_heads": 16,
+      "head_dim": 64,
+      "prefill_tokens": 220,
+      "continuation_tokens": 60,
+      "baseline_ppl": 12.618,
+      "finding1_pca_comparison": [
+        {
+          "k": 8,
+          "pca": 578.0555,
+          "norm_pca": 111.8581,
+          "random": 1248.022,
+          "norm_pca_advantage": 5.17
+        },
+        {
+          "k": 16,
+          "pca": 299.9635,
+          "norm_pca": 30.3625,
+          "random": 1126.2047,
+          "norm_pca_advantage": 9.88
+        },
+        {
+          "k": 32,
+          "pca": 61.6097,
+          "norm_pca": 5.8865,
+          "random": 30.1231,
+          "norm_pca_advantage": 10.47
+        },
+        {
+          "k": 48,
+          "pca": 16.5453,
+          "norm_pca": 1.0562,
+          "random": 120.3809,
+          "norm_pca_advantage": 15.66
+        }
+      ],
+      "finding2_quantization": [
+        {
+          "bits": 8,
+          "naive": 1.656,
+          "norm_sep": 0.2911,
+          "advantage": 5.689
+        },
+        {
+          "bits": 4,
+          "naive": 77.5479,
+          "norm_sep": 12.6181,
+          "advantage": 6.146
+        },
+        {
+          "bits": 3,
+          "naive": 75.4543,
+          "norm_sep": 35.9,
+          "advantage": 2.102
+        },
+        {
+          "bits": 2,
+          "naive": 12805.9817,
+          "norm_sep": 3649.1414,
+          "advantage": 3.509
+        }
+      ],
+      "finding3_kv_asymmetry": {
+        "key_mean_cosine": 0.976786,
+        "value_mean_cosine": 0.82863,
+        "key_gt_value_layers": 24,
+        "total_layers": 24,
+        "per_layer": [
+          {
+            "layer": 0,
+            "key_cosine": 0.932918,
+            "value_cosine": 0.848056
+          },
+          {
+            "layer": 1,
+            "key_cosine": 0.953982,
+            "value_cosine": 0.844772
+          },
+          {
+            "layer": 2,
+            "key_cosine": 0.938574,
+            "value_cosine": 0.826501
+          },
+          {
+            "layer": 3,
+            "key_cosine": 0.953778,
+            "value_cosine": 0.80659
+          },
+          {
+            "layer": 4,
+            "key_cosine": 0.946825,
+            "value_cosine": 0.811695
+          },
+          {
+            "layer": 5,
+            "key_cosine": 0.977997,
+            "value_cosine": 0.810481
+          },
+          {
+            "layer": 6,
+            "key_cosine": 0.95646,
+            "value_cosine": 0.841392
+          },
+          {
+            "layer": 7,
+            "key_cosine": 0.962984,
+            "value_cosine": 0.852589
+          },
+          {
+            "layer": 8,
+            "key_cosine": 0.968612,
+            "value_cosine": 0.844882
+          },
+          {
+            "layer": 9,
+            "key_cosine": 0.967149,
+            "value_cosine": 0.835129
+          },
+          {
+            "layer": 10,
+            "key_cosine": 0.983783,
+            "value_cosine": 0.815928
+          },
+          {
+            "layer": 11,
+            "key_cosine": 0.982554,
+            "value_cosine": 0.818069
+          },
+          {
+            "layer": 12,
+            "key_cosine": 0.987894,
+            "value_cosine": 0.824037
+          },
+          {
+            "layer": 13,
+            "key_cosine": 0.983199,
+            "value_cosine": 0.824615
+          },
+          {
+            "layer": 14,
+            "key_cosine": 0.985241,
+            "value_cosine": 0.827013
+          },
+          {
+            "layer": 15,
+            "key_cosine": 0.990561,
+            "value_cosine": 0.825693
+          },
+          {
+            "layer": 16,
+            "key_cosine": 0.988823,
+            "value_cosine": 0.809081
+          },
+          {
+            "layer": 17,
+            "key_cosine": 0.99282,
+            "value_cosine": 0.83141
+          },
+          {
+            "layer": 18,
+            "key_cosine": 0.997907,
+            "value_cosine": 0.816508
+          },
+          {
+            "layer": 19,
+            "key_cosine": 0.995645,
+            "value_cosine": 0.826639
+          },
+          {
+            "layer": 20,
+            "key_cosine": 0.99735,
+            "value_cosine": 0.82957
+          },
+          {
+            "layer": 21,
+            "key_cosine": 0.99901,
+            "value_cosine": 0.84098
+          },
+          {
+            "layer": 22,
+            "key_cosine": 0.999285,
+            "value_cosine": 0.832397
+          },
+          {
+            "layer": 23,
+            "key_cosine": 0.999515,
+            "value_cosine": 0.843082
+          }
+        ]
+      },
+      "finding4_combos": [
+        {
+          "label": "norm_sep INT4",
+          "delta_ppl": 12.6181,
+          "top5": 0.0576
+        },
+        {
+          "label": "norm_pca(K32V48)+K4V8",
+          "delta_ppl": 11.8796,
+          "top5": 0.0576
+        },
+        {
+          "label": "norm_pca(K16V48)+INT8",
+          "delta_ppl": 18.6919,
+          "top5": 0.061
+        },
+        {
+          "label": "naive INT4",
+          "delta_ppl": 77.5479,
+          "top5": 0.0576
+        }
+      ]
+    },
+    {
+      "model": "Qwen2-0.5B",
+      "hf_id": "Qwen/Qwen2-0.5B",
+      "n_layers": 24,
+      "n_kv_heads": 2,
+      "head_dim": 64,
+      "prefill_tokens": 217,
+      "continuation_tokens": 60,
+      "baseline_ppl": 11.767,
+      "finding1_pca_comparison": [
+        {
+          "k": 8,
+          "pca": 732.0875,
+          "norm_pca": 177.7642,
+          "random": 223.6089,
+          "norm_pca_advantage": 4.12
+        },
+        {
+          "k": 16,
+          "pca": 464.4832,
+          "norm_pca": 44.2008,
+          "random": 13.4169,
+          "norm_pca_advantage": 10.51
+        },
+        {
+          "k": 32,
+          "pca": 11.6963,
+          "norm_pca": 1.1296,
+          "random": 688.9045,
+          "norm_pca_advantage": 10.35
+        },
+        {
+          "k": 48,
+          "pca": 1.3246,
+          "norm_pca": 0.5696,
+          "random": 10.171,
+          "norm_pca_advantage": 2.33
+        }
+      ],
+      "finding2_quantization": [
+        {
+          "bits": 8,
+          "naive": 0.4654,
+          "norm_sep": 0.4451,
+          "advantage": 1.046
+        },
+        {
+          "bits": 4,
+          "naive": 0.6392,
+          "norm_sep": 0.2777,
+          "advantage": 2.302
+        },
+        {
+          "bits": 3,
+          "naive": 1.8981,
+          "norm_sep": 1.7644,
+          "advantage": 1.076
+        },
+        {
+          "bits": 2,
+          "naive": 50.0569,
+          "norm_sep": 66.453,
+          "advantage": 0.753
+        }
+      ],
+      "finding3_kv_asymmetry": {
+        "key_mean_cosine": 0.955407,
+        "value_mean_cosine": 0.842009,
+        "key_gt_value_layers": 24,
+        "total_layers": 24,
+        "per_layer": [
+          {
+            "layer": 0,
+            "key_cosine": 0.999712,
+            "value_cosine": 0.903842
+          },
+          {
+            "layer": 1,
+            "key_cosine": 0.998564,
+            "value_cosine": 0.88039
+          },
+          {
+            "layer": 2,
+            "key_cosine": 0.991286,
+            "value_cosine": 0.817786
+          },
+          {
+            "layer": 3,
+            "key_cosine": 0.947046,
+            "value_cosine": 0.816878
+          },
+          {
+            "layer": 4,
+            "key_cosine": 0.945828,
+            "value_cosine": 0.881978
+          },
+          {
+            "layer": 5,
+            "key_cosine": 0.899539,
+            "value_cosine": 0.85257
+          },
+          {
+            "layer": 6,
+            "key_cosine": 0.97384,
+            "value_cosine": 0.799937
+          },
+          {
+            "layer": 7,
+            "key_cosine": 0.929096,
+            "value_cosine": 0.836219
+          },
+          {
+            "layer": 8,
+            "key_cosine": 0.950301,
+            "value_cosine": 0.838057
+          },
+          {
+            "layer": 9,
+            "key_cosine": 0.939828,
+            "value_cosine": 0.916674
+          },
+          {
+            "layer": 10,
+            "key_cosine": 0.975915,
+            "value_cosine": 0.810436
+          },
+          {
+            "layer": 11,
+            "key_cosine": 0.95362,
+            "value_cosine": 0.844123
+          },
+          {
+            "layer": 12,
+            "key_cosine": 0.93606,
+            "value_cosine": 0.844192
+          },
+          {
+            "layer": 13,
+            "key_cosine": 0.940672,
+            "value_cosine": 0.847873
+          },
+          {
+            "layer": 14,
+            "key_cosine": 0.944102,
+            "value_cosine": 0.857165
+          },
+          {
+            "layer": 15,
+            "key_cosine": 0.944976,
+            "value_cosine": 0.856938
+          },
+          {
+            "layer": 16,
+            "key_cosine": 0.951432,
+            "value_cosine": 0.803254
+          },
+          {
+            "layer": 17,
+            "key_cosine": 0.95257,
+            "value_cosine": 0.862459
+          },
+          {
+            "layer": 18,
+            "key_cosine": 0.941139,
+            "value_cosine": 0.801367
+          },
+          {
+            "layer": 19,
+            "key_cosine": 0.943759,
+            "value_cosine": 0.849854
+          },
+          {
+            "layer": 20,
+            "key_cosine": 0.954394,
+            "value_cosine": 0.881519
+          },
+          {
+            "layer": 21,
+            "key_cosine": 0.970786,
+            "value_cosine": 0.743592
+          },
+          {
+            "layer": 22,
+            "key_cosine": 0.95682,
+            "value_cosine": 0.815784
+          },
+          {
+            "layer": 23,
+            "key_cosine": 0.988487,
+            "value_cosine": 0.845319
+          }
+        ]
+      },
+      "finding4_combos": [
+        {
+          "label": "norm_sep INT4",
+          "delta_ppl": 0.2777,
+          "top5": 0.0712
+        },
+        {
+          "label": "norm_pca(K32V48)+K4V8",
+          "delta_ppl": 1.0833,
+          "top5": 0.0644
+        },
+        {
+          "label": "norm_pca(K16V48)+INT8",
+          "delta_ppl": 31.3237,
+          "top5": 0.0542
+        },
+        {
+          "label": "naive INT4",
+          "delta_ppl": 0.6392,
+          "top5": 0.0644
+        }
+      ]
+    }
+  ],
+  "robustness_verdicts": {
+    "finding1_norm_pca_advantage": true,
+    "finding2_low_bit_advantage_increases": true,
+    "finding3_key_gt_value": true
+  },
+  "elapsed_seconds": 50.3
+}

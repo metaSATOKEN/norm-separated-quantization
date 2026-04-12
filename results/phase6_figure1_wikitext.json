@@ -1,0 +1,40 @@
+{
+  "experiment": "phase6_figure1_wikitext",
+  "timestamp": "2026-04-11T17:19:01.429503",
+  "figure1": {
+    "model": "GPT-2",
+    "layer0_raw_range": [
+      -8.505179405212402,
+      8.498983383178711
+    ],
+    "layer0_normsep_range": [
+      -0.472660094499588,
+      0.487189382314682
+    ],
+    "layer0_raw_std": 1.5564066171646118,
+    "layer0_normsep_std": 0.12499693781137466,
+    "dynamic_range_compression": 12.5
+  },
+  "wikitext2": {
+    "model": "GPT-2",
+    "n_chunks": 5,
+    "baseline_ppl": 70.36,
+    "naive4_dppl": 1.5955,
+    "nsep_pchan4_dppl": 1.1281,
+    "improvement": 1.41,
+    "per_chunk_naive4": [
+      8.2789,
+      -2.514,
+      -3.9662,
+      3.6339,
+      2.545
+    ],
+    "per_chunk_nsep_pchan4": [
+      8.7823,
+      1.1138,
+      -5.9111,
+      -4.4308,
+      6.0862
+    ]
+  }
+}

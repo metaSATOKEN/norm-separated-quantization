@@ -1,0 +1,40 @@
+{
+  "experiment": "phase5b_qwen_anomaly",
+  "timestamp": "2026-04-11T06:18:10.376766",
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "conclusion": {
+    "is_bug": false,
+    "root_cause": "Layer 0 activation outlier channels (absmax=166.75, 10x other layers) cause absmax INT4 to noise-ify mid-range values. INT3 zeros them instead, which is paradoxically less harmful for outlier-dominated attention.",
+    "mechanism": "absmax per-row quantization with extreme outliers: INT4 (qmax=7, scale=23.8) maps mid-range values (5-20) to noisy non-zero levels. INT3 (qmax=3, scale=55.6) maps the same values to zero. In attention where outlier channels dominate QK dot products, noisy mid-range is worse than clean zero.",
+    "affected_layers": "L0 (absmax=166.75, ΔPPL_int4=+179.4 vs ΔPPL_int3=+1.47) and L27 (absmax=408.75, outlier%=1.36%). Middle layers are normal.",
+    "pythia_control": "Pythia-6.9B shows monotonic bit→ΔPPL. Problem is Qwen-specific.",
+    "connection_to_literature": "Same phenomenon as SmoothQuant / LLM.int8() — activation outliers break naive absmax quantization.",
+    "implication_for_arc": "Arc prior (norm separation) and outlier-aware quantization are complementary. Combining both could address Qwen-type models."
+  },
+  "part_a_synthetic": {
+    "verdict": "qa() is correct — MSE monotonically decreases with more bits on synthetic data",
+    "mse_by_bits": {"int8": 0.000041, "int7": 0.000166, "int6": 0.000678, "int5": 0.002976, "int4": 0.013277, "int3": 0.073597, "int2": 0.585562}
+  },
+  "part_b_distribution": {
+    "verdict": "Qwen2-7B has massive outliers in L0 (absmax=166.75) and L27 (absmax=408.75). Middle layers have absmax=10-20.",
+    "outlier_layers": [
+      {"layer": 0, "std": 25.61, "absmax": 166.75, "outlier_pct": 0.78},
+      {"layer": 27, "std": 39.42, "absmax": 408.75, "outlier_pct": 1.36}
+    ],
+    "normal_layers_absmax_range": "9-22"
+  },
+  "part_c_per_head": {
+    "verdict": "MSE is monotonic (INT4 < INT3) for all heads. Reconstruction quality is not the issue.",
+    "layer0_head0": {"int4_mse": 14.37, "int3_mse": 41.75, "int4_cos": 0.9957, "int3_cos": 0.9868}
+  },
+  "part_d_per_layer": {
+    "verdict": "Layer 0 alone causes 99%+ of INT4 degradation. Other layers show INT4 ≈ INT3.",
+    "layer_0": {"int4_dppl": 179.45, "int3_dppl": 1.47, "ratio": 121.93},
+    "layer_4": {"int4_dppl": 0.11, "int3_dppl": 0.04, "ratio": 2.87},
+    "layer_8_to_27": "all < 0.3, ratios 0.4-0.9 (INT4 slightly better as expected)"
+  },
+  "part_e_pythia_control": {
+    "verdict": "Pythia-6.9B shows perfectly monotonic bit→ΔPPL. Problem is Qwen-specific.",
+    "pythia_dppl": {"int8": 0.47, "int7": 0.95, "int6": 0.84, "int5": 4.20, "int4": 22.26, "int3": 44.47, "int2": 349.95}
+  }
+}

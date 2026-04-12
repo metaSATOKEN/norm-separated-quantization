@@ -1,0 +1,29 @@
+{
+  "experiment": "phase5e_full_arc_sweep",
+  "timestamp": "2026-04-11T06:54:15.747810",
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "models_tested": 12,
+  "models_skipped": 2,
+  "skipped": ["GPT-1 (Post-LN, no KV cache API)", "Mistral-7B (gated)"],
+  "complete_table": {
+    "GPT-2":        {"params": "124M", "ln": "Pre-LN",  "hd": 64,  "naive4": 0.64,   "nsep_pc4": 0.56,   "outlier_ratio": null},
+    "OPT-125m":     {"params": "125M", "ln": "Pre-LN",  "hd": 64,  "naive4": 1.22,   "nsep_pc4": 1.46,   "outlier_ratio": 1.49},
+    "Pythia-410M":  {"params": "410M", "ln": "Pre-LN",  "hd": 64,  "naive4": 77.55,  "nsep_pc4": 12.62,  "outlier_ratio": null},
+    "Qwen2-0.5B":   {"params": "0.5B", "ln": "RMSNorm", "hd": 64,  "naive4": 0.64,   "nsep_pc4": 0.28,   "outlier_ratio": null},
+    "OPT-1.3B":     {"params": "1.3B", "ln": "Pre-LN",  "hd": 64,  "naive4": 0.70,   "nsep_pc4": 0.68,   "outlier_ratio": 1.44},
+    "Pythia-2.8B":  {"params": "2.8B", "ln": "Pre-LN",  "hd": 80,  "naive4": 0.90,   "nsep_pc4": -0.06,  "outlier_ratio": 4.02},
+    "Pythia-6.9B":  {"params": "6.9B", "ln": "Pre-LN",  "hd": 128, "naive4": 22.26,  "nsep_pc4": 0.27,   "outlier_ratio": 4.56},
+    "Qwen2-7B":     {"params": "7B",   "ln": "RMSNorm", "hd": 128, "naive4": 238.23, "nsep_pc4": 0.32,   "outlier_ratio": 8.60},
+    "Pythia-12B":   {"params": "12B",  "ln": "Pre-LN",  "hd": 128, "naive4": 27.28,  "nsep_pc4": 1.82,   "outlier_ratio": 4.56},
+    "OPT-13B":      {"params": "13B",  "ln": "Pre-LN",  "hd": 128, "naive4": 0.28,   "nsep_pc4": 0.35,   "outlier_ratio": 3.10},
+    "Qwen2.5-14B":  {"params": "14B",  "ln": "RMSNorm", "hd": 128, "naive4": 0.30,   "nsep_pc4": 0.26,   "outlier_ratio": 3.48},
+    "Falcon-40B":   {"params": "40B",  "ln": "Pre-LN",  "hd": 64,  "naive4": 0.08,   "nsep_pc4": 0.04,   "outlier_ratio": 2.35}
+  },
+  "key_findings": {
+    "pythia_2.8b_negative_dppl": "nsep+pchan4 = -0.06 (actually BETTER than baseline). Per-channel quantization acts as mild regularization.",
+    "opt_no_benefit": "OPT models (outlier ratio 1.4-3.1x) show no benefit from nsep+pchan4. Low-outlier models don't need it.",
+    "falcon_40b_success": "Falcon-40B (40B, 83.7GB VRAM) works. naive4 already excellent (+0.08), nsep+pchan4 slightly better (+0.04).",
+    "gpt1_skipped": "GPT-1 (Post-LN) has no past_key_values support in CausalLMOutput.",
+    "safety_net_confirmed": "Worst case is OPT-125m (+0.23 worse, 1.46 vs 1.22). Never catastrophic. Max upside is 744x (Qwen2-7B)."
+  }
+}

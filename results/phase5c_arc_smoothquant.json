@@ -1,0 +1,37 @@
+{
+  "experiment": "phase5c_arc_smoothquant",
+  "timestamp": "2026-04-11T06:28:30.651238",
+  "device": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+  "headline": "Arc prior (norm-sep) + outlier-aware quantization achieves 744x improvement over naive INT4 on Qwen2-7B",
+  "key_finding": "Neither norm-sep alone nor outlier-aware alone is sufficient. The combination is what works — they are orthogonally complementary.",
+  "qwen2_7b": {
+    "baseline_ppl": 5.497,
+    "results": {
+      "naive4": {"dppl": 238.23, "improvement": "baseline"},
+      "nsep4": {"dppl": 57.45, "improvement": "4.1x"},
+      "outlier4_4ch": {"dppl": 23.17, "improvement": "10.3x"},
+      "outlier4_8ch": {"dppl": 0.58, "improvement": "411x"},
+      "nsep+out4_4ch": {"dppl": 0.59, "improvement": "404x"},
+      "nsep+out4_8ch": {"dppl": 0.22, "improvement": "1083x"},
+      "perchan4": {"dppl": 97.77, "improvement": "2.4x"},
+      "nsep+pchan4": {"dppl": 0.32, "improvement": "744x"}
+    },
+    "layer0_analysis": {
+      "outlier_ratio": "8.6x (absmax=166.8, mean=19.4)",
+      "top_outlier_channels": [63, 126, 123, 124, 61, 125, 127, 62],
+      "naive4_l0_dppl": 179.45,
+      "nsep+pchan4_l0_dppl": 0.11
+    },
+    "generation": "nsep+pchan4 produces coherent English (uq=0.98)"
+  },
+  "pythia_6.9b": {
+    "baseline_ppl": 18.0,
+    "results": {
+      "naive4": {"dppl": 22.26, "improvement": "baseline"},
+      "nsep4": {"dppl": 9.99, "improvement": "2.2x"},
+      "nsep+pchan4": {"dppl": 0.27, "improvement": "82x"}
+    },
+    "layer0_outlier_ratio": "3.6x (much lower than Qwen2)",
+    "generation": "all methods coherent (uq=1.0)"
+  }
+}

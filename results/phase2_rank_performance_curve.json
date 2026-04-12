@@ -1,0 +1,420 @@
+{
+  "experiment": "phase2_rank_performance_curve",
+  "version": "v2.0",
+  "timestamp": "2026-04-10T21:49:28.425817",
+  "model": "GPT-2",
+  "baseline_ppl": 23.489,
+  "eval_tokens": 170,
+  "d_model": 768,
+  "layers": [
+    {
+      "layer": 6,
+      "curves": [
+        {
+          "k": 2,
+          "compression_ratio": 256.0,
+          "norm_pca": {
+            "ppl": 6665.11,
+            "delta_ppl": 6641.621,
+            "top5_overlap": 0.2129,
+            "mean_cosine_drift": 0.305448
+          },
+          "direct_pca": {
+            "ppl": 3689.842,
+            "delta_ppl": 3666.353,
+            "top5_overlap": 0.2188,
+            "mean_cosine_drift": 0.29602
+          }
+        },
+        {
+          "k": 4,
+          "compression_ratio": 153.6,
+          "norm_pca": {
+            "ppl": 6683.888,
+            "delta_ppl": 6660.399,
+            "top5_overlap": 0.2106,
+            "mean_cosine_drift": 0.297604
+          },
+          "direct_pca": {
+            "ppl": 2481.972,
+            "delta_ppl": 2458.483,
+            "top5_overlap": 0.2318,
+            "mean_cosine_drift": 0.283364
+          }
+        },
+        {
+          "k": 8,
+          "compression_ratio": 85.3,
+          "norm_pca": {
+            "ppl": 9221.513,
+            "delta_ppl": 9198.024,
+            "top5_overlap": 0.1565,
+            "mean_cosine_drift": 0.297453
+          },
+          "direct_pca": {
+            "ppl": 1424.058,
+            "delta_ppl": 1400.569,
+            "top5_overlap": 0.2447,
+            "mean_cosine_drift": 0.267265
+          }
+        },
+        {
+          "k": 16,
+          "compression_ratio": 45.2,
+          "norm_pca": {
+            "ppl": 4592.025,
+            "delta_ppl": 4568.537,
+            "top5_overlap": 0.2059,
+            "mean_cosine_drift": 0.280178
+          },
+          "direct_pca": {
+            "ppl": 765.749,
+            "delta_ppl": 742.26,
+            "top5_overlap": 0.2871,
+            "mean_cosine_drift": 0.245031
+          }
+        },
+        {
+          "k": 32,
+          "compression_ratio": 23.3,
+          "norm_pca": {
+            "ppl": 2678.939,
+            "delta_ppl": 2655.45,
+            "top5_overlap": 0.2412,
+            "mean_cosine_drift": 0.258848
+          },
+          "direct_pca": {
+            "ppl": 487.256,
+            "delta_ppl": 463.767,
+            "top5_overlap": 0.3165,
+            "mean_cosine_drift": 0.220715
+          }
+        },
+        {
+          "k": 64,
+          "compression_ratio": 11.8,
+          "norm_pca": {
+            "ppl": 1335.256,
+            "delta_ppl": 1311.767,
+            "top5_overlap": 0.2894,
+            "mean_cosine_drift": 0.237723
+          },
+          "direct_pca": {
+            "ppl": 325.982,
+            "delta_ppl": 302.493,
+            "top5_overlap": 0.3647,
+            "mean_cosine_drift": 0.194006
+          }
+        }
+      ]
+    },
+    {
+      "layer": 8,
+      "curves": [
+        {
+          "k": 2,
+          "compression_ratio": 256.0,
+          "norm_pca": {
+            "ppl": 2475.858,
+            "delta_ppl": 2452.37,
+            "top5_overlap": 0.2235,
+            "mean_cosine_drift": 0.33378
+          },
+          "direct_pca": {
+            "ppl": 4942.439,
+            "delta_ppl": 4918.951,
+            "top5_overlap": 0.1318,
+            "mean_cosine_drift": 0.32422
+          }
+        },
+        {
+          "k": 4,
+          "compression_ratio": 153.6,
+          "norm_pca": {
+            "ppl": 2527.665,
+            "delta_ppl": 2504.176,
+            "top5_overlap": 0.2388,
+            "mean_cosine_drift": 0.329366
+          },
+          "direct_pca": {
+            "ppl": 2685.234,
+            "delta_ppl": 2661.745,
+            "top5_overlap": 0.2247,
+            "mean_cosine_drift": 0.308941
+          }
+        },
+        {
+          "k": 8,
+          "compression_ratio": 85.3,
+          "norm_pca": {
+            "ppl": 3007.901,
+            "delta_ppl": 2984.413,
+            "top5_overlap": 0.2224,
+            "mean_cosine_drift": 0.326219
+          },
+          "direct_pca": {
+            "ppl": 1103.57,
+            "delta_ppl": 1080.081,
+            "top5_overlap": 0.2765,
+            "mean_cosine_drift": 0.291295
+          }
+        },
+        {
+          "k": 16,
+          "compression_ratio": 45.2,
+          "norm_pca": {
+            "ppl": 1812.763,
+            "delta_ppl": 1789.274,
+            "top5_overlap": 0.2718,
+            "mean_cosine_drift": 0.307772
+          },
+          "direct_pca": {
+            "ppl": 558.26,
+            "delta_ppl": 534.771,
+            "top5_overlap": 0.32,
+            "mean_cosine_drift": 0.267495
+          }
+        },
+        {
+          "k": 32,
+          "compression_ratio": 23.3,
+          "norm_pca": {
+            "ppl": 929.533,
+            "delta_ppl": 906.044,
+            "top5_overlap": 0.3118,
+            "mean_cosine_drift": 0.282807
+          },
+          "direct_pca": {
+            "ppl": 340.45,
+            "delta_ppl": 316.961,
+            "top5_overlap": 0.3694,
+            "mean_cosine_drift": 0.239832
+          }
+        },
+        {
+          "k": 64,
+          "compression_ratio": 11.8,
+          "norm_pca": {
+            "ppl": 603.964,
+            "delta_ppl": 580.475,
+            "top5_overlap": 0.3282,
+            "mean_cosine_drift": 0.258262
+          },
+          "direct_pca": {
+            "ppl": 203.618,
+            "delta_ppl": 180.13,
+            "top5_overlap": 0.42,
+            "mean_cosine_drift": 0.212756
+          }
+        }
+      ]
+    },
+    {
+      "layer": 9,
+      "curves": [
+        {
+          "k": 2,
+          "compression_ratio": 256.0,
+          "norm_pca": {
+            "ppl": 1820.958,
+            "delta_ppl": 1797.469,
+            "top5_overlap": 0.2306,
+            "mean_cosine_drift": 0.309871
+          },
+          "direct_pca": {
+            "ppl": 2852.208,
+            "delta_ppl": 2828.719,
+            "top5_overlap": 0.2165,
+            "mean_cosine_drift": 0.301881
+          }
+        },
+        {
+          "k": 4,
+          "compression_ratio": 153.6,
+          "norm_pca": {
+            "ppl": 1502.125,
+            "delta_ppl": 1478.636,
+            "top5_overlap": 0.2647,
+            "mean_cosine_drift": 0.305457
+          },
+          "direct_pca": {
+            "ppl": 1802.64,
+            "delta_ppl": 1779.151,
+            "top5_overlap": 0.2471,
+            "mean_cosine_drift": 0.288042
+          }
+        },
+        {
+          "k": 8,
+          "compression_ratio": 85.3,
+          "norm_pca": {
+            "ppl": 1373.086,
+            "delta_ppl": 1349.597,
+            "top5_overlap": 0.2753,
+            "mean_cosine_drift": 0.304345
+          },
+          "direct_pca": {
+            "ppl": 869.416,
+            "delta_ppl": 845.927,
+            "top5_overlap": 0.3012,
+            "mean_cosine_drift": 0.267678
+          }
+        },
+        {
+          "k": 16,
+          "compression_ratio": 45.2,
+          "norm_pca": {
+            "ppl": 970.351,
+            "delta_ppl": 946.862,
+            "top5_overlap": 0.2894,
+            "mean_cosine_drift": 0.28756
+          },
+          "direct_pca": {
+            "ppl": 459.46,
+            "delta_ppl": 435.971,
+            "top5_overlap": 0.3306,
+            "mean_cosine_drift": 0.243442
+          }
+        },
+        {
+          "k": 32,
+          "compression_ratio": 23.3,
+          "norm_pca": {
+            "ppl": 605.762,
+            "delta_ppl": 582.273,
+            "top5_overlap": 0.3329,
+            "mean_cosine_drift": 0.263236
+          },
+          "direct_pca": {
+            "ppl": 260.166,
+            "delta_ppl": 236.677,
+            "top5_overlap": 0.3976,
+            "mean_cosine_drift": 0.218599
+          }
+        },
+        {
+          "k": 64,
+          "compression_ratio": 11.8,
+          "norm_pca": {
+            "ppl": 419.505,
+            "delta_ppl": 396.016,
+            "top5_overlap": 0.3659,
+            "mean_cosine_drift": 0.239791
+          },
+          "direct_pca": {
+            "ppl": 169.442,
+            "delta_ppl": 145.953,
+            "top5_overlap": 0.4471,
+            "mean_cosine_drift": 0.194062
+          }
+        }
+      ]
+    },
+    {
+      "layer": 10,
+      "curves": [
+        {
+          "k": 2,
+          "compression_ratio": 256.0,
+          "norm_pca": {
+            "ppl": 1835.969,
+            "delta_ppl": 1812.481,
+            "top5_overlap": 0.2482,
+            "mean_cosine_drift": 0.219503
+          },
+          "direct_pca": {
+            "ppl": 2063.914,
+            "delta_ppl": 2040.425,
+            "top5_overlap": 0.2012,
+            "mean_cosine_drift": 0.212921
+          }
+        },
+        {
+          "k": 4,
+          "compression_ratio": 153.6,
+          "norm_pca": {
+            "ppl": 1045.611,
+            "delta_ppl": 1022.122,
+            "top5_overlap": 0.2694,
+            "mean_cosine_drift": 0.205243
+          },
+          "direct_pca": {
+            "ppl": 1114.864,
+            "delta_ppl": 1091.375,
+            "top5_overlap": 0.2482,
+            "mean_cosine_drift": 0.199905
+          }
+        },
+        {
+          "k": 8,
+          "compression_ratio": 85.3,
+          "norm_pca": {
+            "ppl": 946.848,
+            "delta_ppl": 923.359,
+            "top5_overlap": 0.2871,
+            "mean_cosine_drift": 0.211895
+          },
+          "direct_pca": {
+            "ppl": 563.174,
+            "delta_ppl": 539.685,
+            "top5_overlap": 0.3047,
+            "mean_cosine_drift": 0.187028
+          }
+        },
+        {
+          "k": 16,
+          "compression_ratio": 45.2,
+          "norm_pca": {
+            "ppl": 577.822,
+            "delta_ppl": 554.333,
+            "top5_overlap": 0.3329,
+            "mean_cosine_drift": 0.207852
+          },
+          "direct_pca": {
+            "ppl": 338.317,
+            "delta_ppl": 314.828,
+            "top5_overlap": 0.3565,
+            "mean_cosine_drift": 0.166603
+          }
+        },
+        {
+          "k": 32,
+          "compression_ratio": 23.3,
+          "norm_pca": {
+            "ppl": 455.09,
+            "delta_ppl": 431.601,
+            "top5_overlap": 0.3471,
+            "mean_cosine_drift": 0.19336
+          },
+          "direct_pca": {
+            "ppl": 222.164,
+            "delta_ppl": 198.675,
+            "top5_overlap": 0.4165,
+            "mean_cosine_drift": 0.149766
+          }
+        },
+        {
+          "k": 64,
+          "compression_ratio": 11.8,
+          "norm_pca": {
+            "ppl": 386.186,
+            "delta_ppl": 362.697,
+            "top5_overlap": 0.3447,
+            "mean_cosine_drift": 0.17765
+          },
+          "direct_pca": {
+            "ppl": 146.047,
+            "delta_ppl": 122.558,
+            "top5_overlap": 0.4518,
+            "mean_cosine_drift": 0.132369
+          }
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "sweet_spots": [],
+    "conclusion": "No sweet spot found even at k=512. Hidden state full-replacement compression is not viable. Recommend pivoting to KV cache compression (Phase 4)."
+  },
+  "elapsed_seconds": 8.6
+}

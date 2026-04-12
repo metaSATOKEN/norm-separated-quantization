@@ -1,0 +1,23 @@
+{
+  "experiment": "phase7_appendix",
+  "timestamp": "2026-04-12T01:59:03",
+  "model": "Pythia-6.9B",
+  "long_context": {
+    "nsep_pchan4_stable": "ΔPPL +2.1 → +1.3 → +3.0 → +3.4 across 256-1536 tokens",
+    "naive4_unstable": "ΔPPL +27.9 → +8.7 → +10.2 → +15.8",
+    "kivi_catastrophic": "ΔPPL +211 → +113 → +361 → +373"
+  },
+  "kivi_comparison": {
+    "naive4": 10.22, "nsep_pchan4": 2.98,
+    "kivi_k2v4": 360.80, "nsep_kivi": 53.60,
+    "note": "Simplified KIVI (per-channel absmax only). Real KIVI uses additional techniques."
+  },
+  "memory": {
+    "fp16_1024tok_mb": 640.2, "int4_est_mb": 160.0,
+    "nsep_overhead_mb": 4.19, "nsep_int4_total_mb": 164.2,
+    "effective_ratio": 3.9,
+    "latency_baseline_s": 0.716, "latency_nsep_s": 0.866,
+    "latency_overhead_pct": 21.0,
+    "note": "21% overhead is from unoptimized Python loop over heads. Fused CUDA kernel would be negligible."
+  }
+}

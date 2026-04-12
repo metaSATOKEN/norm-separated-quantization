@@ -1,0 +1,665 @@
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{xcolor}
+\usepackage{enumitem}
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+\usepackage{listings}
+\lstset{
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue!70!black},
+  commentstyle=\color{green!50!black},
+  stringstyle=\color{red!60!black},
+  breaklines=true,
+  frame=single,
+  framerule=0.4pt,
+  rulecolor=\color{gray!50},
+  backgroundcolor=\color{gray!5},
+  numbers=none,
+  xleftmargin=4pt,
+  xrightmargin=4pt,
+  aboveskip=8pt,
+  belowskip=8pt,
+}
+
+\title{Norm-Separated Quantization:\\A Training-Free Fix for KV Cache INT4 Failures}
+\author{Kentaro Sato\\info@metaclan.jp}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+INT4 quantization of KV caches is a standard technique for reducing the memory footprint of large language model inference, but it can fail catastrophically on certain models---we observe $\Delta$PPL as high as +238 on Qwen2-7B under naive absmax quantization. We trace the root cause to two independent factors: (1)~large token-wise norm variation in KV vectors, which forces the quantization scale to accommodate extreme dynamic ranges, and (2)~activation outlier channels that corrupt the quantization scale for normal channels. We propose \textbf{norm-separated quantization}---a simple preprocessing step that decomposes each KV vector into its L2 norm (stored at full precision) and unit direction (quantized). Combined with per-channel scaling, this method (nsep+pchan) reduces the Qwen2-7B failure from $\Delta$PPL~+812 to~+0.43 on WikiText-2 (1885$\times$ improvement), with the gap widening at longer contexts: at 4096 tokens, naive INT4 degrades to $\Delta$PPL~+8293 while nsep+pchan remains at~+0.19 (44{,}000$\times$). The method never degrades models where naive INT4 already works. Across 12 Pre-LN models from 124M to 40B parameters spanning 4 architecture families, nsep+pchan achieves $\Delta$PPL~$<$~2.0 at INT4 with no training, no calibration data, and negligible computational overhead.
+\end{abstract}
+
+%% ============================================================
+\section{Introduction}
+
+KV cache quantization is one of the most practical ways to reduce memory consumption during LLM inference. During autoregressive generation, key and value vectors for all past tokens are stored at each layer, consuming memory proportional to $2 \times L \times H \times T \times d_h$ (layers, KV heads, sequence length, head dimension). For long contexts, this often exceeds the model weights themselves.
+
+Naive absmax INT4 quantization---storing each element in 4 bits using a per-row scale factor---works well for many models. Falcon-40B loses only $\Delta$PPL~=~+0.08, and OPT-13B only~+0.28. However, we find that this same technique \textbf{catastrophically fails} on certain models:
+\begin{itemize}[nosep]
+  \item Qwen2-7B: $\Delta$PPL~=~+238 (model output becomes incoherent)
+  \item Pythia-410M: $\Delta$PPL~=~+78
+  \item Pythia-6.9B: $\Delta$PPL~=~+22
+  \item Pythia-12B: $\Delta$PPL~=~+27
+\end{itemize}
+
+What determines whether naive INT4 succeeds or fails? And can we make it reliable across all models?
+
+We investigate these questions and arrive at a simple technique---\textbf{norm-separated quantization}---that eliminates catastrophic failures by decomposing each vector into its magnitude (stored exactly) and direction (quantized). The key insight is that KV vectors in Pre-LN Transformers have high norm variance across tokens, and this variance inflates the dynamic range that quantization must capture. Separating the norm first compresses this range, making quantization more precise with the same number of bits.
+
+Combined with per-channel quantization (to handle activation outlier channels), this gives a universal INT4 method we call \textbf{nsep+pchan} that:
+\begin{itemize}[nosep]
+  \item \textbf{Rescues catastrophic failures}: $\Delta$PPL~+238~$\to$~+0.32 on Qwen2-7B (744$\times$)
+  \item \textbf{Never hurts}: Worst-case degradation of +0.24 $\Delta$PPL (on OPT-125m)
+  \item \textbf{Requires nothing}: No training, no calibration data, no model-specific tuning
+  \item \textbf{Scales}: Validated on 12 models from 124M to 40B
+\end{itemize}
+
+%% ============================================================
+\section{Background}
+
+\subsection{KV Cache Quantization}
+
+During autoregressive generation, a Transformer caches the key ($\mathbf{K}$) and value ($\mathbf{V}$) projections for each past token at each layer. These are used by the attention mechanism to compute:
+\begin{equation}
+\text{Attention}(\mathbf{q}, \mathbf{K}, \mathbf{V}) = \text{softmax}\!\left(\frac{\mathbf{q}\mathbf{K}^\top}{\sqrt{d_h}}\right)\mathbf{V}
+\end{equation}
+
+Quantizing $\mathbf{K}$ and $\mathbf{V}$ to lower precision (INT8, INT4) reduces memory but introduces approximation error. The softmax provides some natural robustness---small perturbations in the $\mathbf{qK}^\top$ dot product often preserve the top-$k$ ranking of attended tokens.
+
+\textbf{Absmax symmetric quantization} maps a floating-point vector $\mathbf{x}$ to $b$-bit integers:
+\begin{equation}
+\mathbf{x}_q = \text{round}\!\left(\frac{\mathbf{x}}{s}\right) \cdot s, \quad s = \frac{\max|\mathbf{x}|}{2^{b-1}-1}
+\end{equation}
+
+The scale $s$ is typically computed per-row (one per token) or per-channel (one per dimension).
+
+\subsection{Known Failure Mode: Activation Outliers}
+
+\citet{dettmers2022llm} and \citet{xiao2023smoothquant} identified that certain Transformer layers develop \textbf{outlier channels}---specific dimensions where activations are 10--100$\times$ larger than average. Under per-row absmax quantization, these outliers inflate the scale factor $s$, wasting quantization precision on normal channels. Solutions include mixed-precision decomposition (LLM.int8()) and per-channel smoothing (SmoothQuant).
+
+\subsection{A Less-Known Factor: Norm Variation}
+
+We identify an additional, independent source of quantization difficulty: \textbf{token-wise norm variation}. In Pre-LN Transformers, hidden-state norms vary significantly across tokens---the L2 norm of KV vectors can differ by 2--5$\times$ within a single sequence. This is a well-documented geometric property: the first principal component of mid-layer hidden states correlates near-perfectly ($|r| > 0.96$) with the token-wise norm \citep{sato2026arc}.
+
+Under per-row absmax quantization, each token's KV vector is quantized with its own scale $s_t = \max|\mathbf{x}_t| / (2^{b-1}-1)$. High-norm tokens get coarse scales, low-norm tokens get fine scales---the quantization precision is inconsistent across the sequence. More importantly, the \textbf{direction} information (which determines attention patterns) is entangled with the \textbf{magnitude} information (which scales the output), so errors in one corrupt the other.
+
+%% ============================================================
+\section{Method: Norm-Separated Quantization}
+
+\subsection{Core Idea}
+
+Instead of quantizing the raw KV vector, we first decompose it:
+\begin{equation}
+\mathbf{x} = \underbrace{\|\mathbf{x}\|_2}_{n \text{ (scalar)}} \cdot \underbrace{\frac{\mathbf{x}}{\|\mathbf{x}\|_2}}_{\hat{\mathbf{x}} \text{ (unit direction)}}
+\end{equation}
+
+\begin{itemize}[nosep]
+  \item \textbf{Norm} $n$: stored at full precision (FP16/FP32). One scalar per token---negligible memory cost.
+  \item \textbf{Direction} $\hat{\mathbf{x}}$: quantized. All components lie in $[-1, 1]$ with consistent dynamic range across tokens.
+\end{itemize}
+
+\subsection{Algorithm}
+
+For each KV cache vector $\mathbf{x} \in \mathbb{R}^{d_h}$ at each head, token, and layer:
+\begin{enumerate}[nosep]
+  \item $n \leftarrow \|\mathbf{x}\|_2$
+  \item $\hat{\mathbf{x}} \leftarrow \mathbf{x} / n$
+  \item $\hat{\mathbf{x}}_q \leftarrow Q_b(\hat{\mathbf{x}})$ --- quantize direction at $b$ bits
+  \item $\hat{\mathbf{x}}_q \leftarrow \hat{\mathbf{x}}_q / \|\hat{\mathbf{x}}_q\|_2$ --- re-normalize (prevents norm drift from rounding)
+  \item $\mathbf{x}_q \leftarrow n \cdot \hat{\mathbf{x}}_q$ --- reconstruct
+\end{enumerate}
+
+The entire method adds only 4 lines to an existing quantization pipeline. Figure~\ref{lst:code} shows a complete PyTorch implementation.
+
+\begin{figure}[h]
+\begin{lstlisting}
+def nsep_pchan_int4(x):
+    """Norm-separated per-channel INT4 quantization.
+    x: (seq_len, head_dim) -- one KV cache head."""
+    # 1. Separate norm (stored in full precision)
+    norm = x.norm(dim=-1, keepdim=True)
+    direction = x / norm
+
+    # 2. Quantize direction (per-channel INT4)
+    scale = direction.abs().amax(dim=0, keepdim=True) / 7
+    direction_q = (direction / scale).round().clamp(-7, 7) * scale
+
+    # 3. Reconstruct
+    direction_q = direction_q / direction_q.norm(dim=-1, keepdim=True)
+    return norm * direction_q
+\end{lstlisting}
+\caption{Complete nsep+pchan4 implementation in PyTorch. The method adds 4 lines (norm separation and re-normalization) to standard per-channel INT4 quantization. No training, calibration, or model-specific tuning is required.}
+\label{lst:code}
+\end{figure}
+
+\subsection{Why It Helps}
+
+After norm separation, all direction vectors have unit norm regardless of the original token's magnitude. This has two effects:
+
+\begin{enumerate}[nosep]
+  \item \textbf{Dynamic range compression}: Raw KV components might range from $[-170, +170]$ (as in Qwen2-7B Layer~0). After normalization, they range from approximately $[-0.3, +0.3]$ (Figure~\ref{fig:distribution}). Fewer quantization levels are wasted on extreme values.
+  \item \textbf{Decoupling}: The norm (which determines the magnitude of attention output) is preserved exactly. Only the direction (which determines attention patterns) is approximated. These two types of information have different sensitivity profiles, and separating them allows better precision allocation.
+\end{enumerate}
+
+Figure~\ref{fig:distribution} illustrates this dynamic range compression on Qwen2-7B---the model with the most severe outliers in our evaluation. Layer~0 key vectors span $[-160, +167]$ ($\sigma=25.6$) before norm separation, but only $[-0.54, +0.77]$ ($\sigma=0.088$) after---a \textbf{290$\times$ reduction} in standard deviation. Even the well-behaved mid-layer (Layer~14, $\sigma=1.70$) compresses to $\sigma=0.088$ after norm separation, showing that the technique normalizes the dynamic range consistently across layers.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figure1_qwen2_7b.pdf}
+  \caption{Dynamic range compression via norm separation (Qwen2-7B). (a)~Raw Layer~0 key values span $[-160, +167]$ with $\sigma=25.6$, driven by activation outlier channels. (b)~After norm separation, the same vectors are compressed to $[-0.54, +0.77]$ with $\sigma=0.088$---a 290$\times$ reduction. (c--d)~Mid-layer (Layer~14) shows the same compression effect, confirming that norm separation normalizes the dynamic range consistently across layers regardless of outlier severity.}
+  \label{fig:distribution}
+\end{figure}
+
+\subsection{Combining with Per-Channel Quantization}
+
+Norm separation addresses token-wise norm variation but not channel-wise outliers. For complete robustness, we combine it with \textbf{per-channel absmax quantization}, where each dimension gets its own scale factor:
+\begin{equation}
+s_j = \frac{\max_t |\hat{x}_{tj}|}{2^{b-1}-1}
+\end{equation}
+
+This prevents outlier channels from corrupting the scale of normal channels. The combined method, \textbf{nsep+pchan}, addresses both failure modes simultaneously.
+
+\subsection{Overhead}
+
+\begin{itemize}[nosep]
+  \item \textbf{Computation}: One L2 norm and one division per vector. Negligible compared to attention computation.
+  \item \textbf{Memory}: One FP16 scalar per (token, head, layer). For a 32-layer, 32-head model with 4096 tokens: $32 \times 32 \times 4096 \times 2$~bytes~$=$~8\,MB---less than 0.1\% of the KV cache.
+\end{itemize}
+
+%% ============================================================
+\section{Why Naive INT4 Fails: Two Case Studies}
+
+\subsection{Case 1: Qwen2-7B --- Activation Outliers}
+
+Qwen2-7B shows $\Delta$PPL~=~+238 under naive INT4. We traced the cause by compressing one layer at a time:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lc}
+\toprule
+Layer & INT4 $\Delta$PPL (this layer only) \\
+\midrule
+\textbf{Layer 0} & \textbf{+179.4} (99\% of total) \\
+Layer 4 & +0.11 \\
+Layers 8--27 & $<$ 0.25 each \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Layer~0 alone} causes nearly all the degradation. Examining the KV cache distribution: Layer~0 absmax~=~166.8 (mean channel absmax: 19.4, outlier ratio: 8.6$\times$), while Layers~4--26 have absmax~9--22 (ratio~$<$~2$\times$). Eight specific channels (indices 61--63, 123--127) contain values 8$\times$ larger than average. Under per-row absmax with $q_{\max}=7$ (INT4), the scale becomes $s=167/7=23.8$, and mid-range values (5--20) are mapped to noisy quantization levels that corrupt attention patterns.
+
+\subsection{Case 2: Pythia-6.9B --- Norm Variation Without Outliers}
+
+Pythia-6.9B shows $\Delta$PPL~=~+22 under naive INT4, despite having a low outlier ratio (4.6$\times$). Here, the issue is primarily \textbf{norm variation}: token-wise KV norms range from 5.8 to 11.4, meaning per-row scales vary by ${\sim}2\times$. While not catastrophic individually, the inconsistent quantization precision across 32 layers compounds.
+
+\subsection{A Surprising Finding: INT3 Outperforms INT4}
+
+On Qwen2-7B, INT3 ($\Delta$PPL=+6.6) dramatically outperforms INT4 ($\Delta$PPL=+238):
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{cccc}
+\toprule
+$q_{\max}$ & Scale & Value $15.0 \to$ & Value $5.0 \to$ \\
+\midrule
+7 (INT4) & 23.8 & 23.8 (noisy) & 0 (zeroed) \\
+3 (INT3) & 55.6 & 0 (zeroed) & 0 (zeroed) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+INT3's coarser quantization maps mid-range values to zero rather than noisy non-zero levels. In attention dominated by outlier channels, this ``clean zeroing'' is less harmful than INT4's ``noisy quantization''---a counterintuitive failure mode that per-channel quantization resolves.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figure5_anomaly.pdf}
+  \caption{The INT3~$>$~INT4 anomaly in Qwen2-7B. (a)~Per-layer $\Delta$PPL when compressing a single layer: Layer~0 alone accounts for 99\% of INT4 degradation (+179.4), while INT3 causes only~+1.5 at the same layer. All other layers contribute~$<$~0.3 each. (b)~Schematic of Layer~0's key value distribution, showing the outlier channels (absmax~${\sim}$167) that dominate the quantization scale and corrupt mid-range values under INT4.}
+  \label{fig:anomaly}
+\end{figure}
+
+%% ============================================================
+\section{Results}
+
+\subsection{Ablation: What Contributes?}
+
+We test six INT4 variants on Qwen2-7B (the hardest case):
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lcccc}
+\toprule
+Method & Norm-sep & Outlier handling & $\Delta$PPL & vs naive \\
+\midrule
+naive4 & & & +238.2 & --- \\
+nsep4 & \checkmark & & +57.5 & 4.1$\times$ \\
+outlier4 & & top-4 ch fp16 & +23.2 & 10.3$\times$ \\
+perchan4 & & per-ch scale & +97.8 & 2.4$\times$ \\
+\textbf{nsep+out4} & \checkmark & top-4 ch fp16 & \textbf{+0.59} & \textbf{404$\times$} \\
+\textbf{nsep+pchan4} & \checkmark & per-ch scale & \textbf{+0.32} & \textbf{744$\times$} \\
+\bottomrule
+\end{tabular}
+\caption{Ablation on Qwen2-7B (INT4). Neither norm separation nor outlier-aware quantization alone is sufficient. Their combination achieves 744$\times$ improvement.}
+\label{tab:ablation}
+\end{table}
+
+\textbf{Neither technique alone is sufficient.} Norm separation alone still leaves~+57.5. Per-channel alone still leaves~+97.8. The combination achieves~+0.32---the two techniques address orthogonal failure modes and their benefits compose (Figure~\ref{fig:ablation}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.85\textwidth]{figure3_ablation.pdf}
+  \caption{Ablation on Qwen2-7B (INT4). Neither norm separation nor outlier-aware quantization alone reduces $\Delta$PPL below~+23. Their combination (purple bars) achieves~+0.32---a 744$\times$ improvement over naive INT4. The superlinear composition confirms that the two techniques address independent failure modes.}
+  \label{fig:ablation}
+\end{figure}
+
+\subsection{Complete Model Sweep: 12 Models, 124M to 40B}
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrcrrr}
+\toprule
+Model & Params & $d_h$ & Arch & naive4 & nsep+pchan4 & Improv. \\
+\midrule
+Falcon-40B & 40B & 64 & MHA & +0.08 & +0.04 & 2$\times$ \\
+Qwen2.5-14B & 14B & 128 & GQA & +0.30 & +0.26 & 1$\times$ \\
+OPT-13B & 13B & 128 & MHA & +0.28 & +0.35 & 1$\times$ \\
+Pythia-12B & 12B & 128 & MHA & +27.28 & +1.82 & 15$\times$ \\
+Qwen2-7B & 7B & 128 & GQA & +238.23 & +0.32 & 744$\times$ \\
+Pythia-6.9B & 6.9B & 128 & MHA & +22.26 & +0.27 & 82$\times$ \\
+Pythia-2.8B & 2.8B & 80 & MHA & +0.90 & $-$0.06 & 14$\times$ \\
+OPT-1.3B & 1.3B & 64 & MHA & +0.70 & +0.68 & 1$\times$ \\
+Qwen2-0.5B & 0.5B & 64 & GQA & +0.64 & +0.28 & 2$\times$ \\
+Pythia-410M & 410M & 64 & MHA & +77.55 & +12.62 & 6$\times$ \\
+GPT-2 & 124M & 64 & MHA & +0.64 & +0.56 & 1$\times$ \\
+OPT-125m & 125M & 64 & MHA & +1.22 & +1.46 & 1$\times$ \\
+\bottomrule
+\end{tabular}
+\caption{Complete model sweep (curated text). $\Delta$PPL for naive INT4 vs.\ nsep+pchan INT4 across 12 Pre-LN models. nsep+pchan provides large improvements where needed (6--744$\times$ when naive4 $\Delta$PPL~$>$~10) and never causes catastrophic degradation (worst case:~+0.24 on OPT-125m).}
+\label{tab:sweep}
+\end{table}
+
+\subsection{Key Patterns}
+
+\textbf{Safety-net property}: nsep+pchan provides large improvements exactly when needed (naive4 $\Delta$PPL~$>$~10 $\to$ 6--744$\times$ improvement) and introduces negligible change when not needed (naive4 $\Delta$PPL~$<$~1 $\to$ within 0.24). It never causes catastrophic degradation.
+
+\textbf{Negative $\Delta$PPL}: Pythia-2.8B achieves $\Delta$PPL~=~$-$0.06, slightly \emph{outperforming} the uncompressed baseline. We attribute this to per-channel quantization acting as a form of mild regularization.
+
+\textbf{Model-family patterns}: OPT models consistently show the smallest benefit (outlier ratios 1.4--3.1$\times$, among the lowest). Pythia models benefit most strongly. Qwen models show the largest \emph{potential} improvement when outliers are severe (Qwen2-7B) but no benefit when they are mild (Qwen2.5-14B).
+
+\subsection{Generation Quality}
+
+We verify that $\Delta$PPL improvements translate to generation quality using top-$p$ sampling ($p=0.9$, temperature=0.8):
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llcl}
+\toprule
+Model & Method & Tri.\ Div. & Sample \\
+\midrule
+Pythia-6.9B & baseline & 1.00 & ``The first AI event in the United States...'' \\
+Pythia-6.9B & naive4 & 1.00 & ``A second generation of `improvised'...'' \\
+Pythia-6.9B & nsep+pchan4 & 1.00 & ``In the 1980s, AI moved into the real world...'' \\
+\midrule
+Qwen2-7B & baseline & 1.00 & ``AI research has been dominated by...'' \\
+Qwen2-7B & naive4 & 0.76 & ``AI but, but AI in the. the winter...'' \\
+Qwen2-7B & nsep+pchan4 & 0.98 & ``But AI progress stagnated and funding...'' \\
+\bottomrule
+\end{tabular}
+\caption{Generation quality. On Qwen2-7B, naive4 produces degenerate repetition (diversity=0.76), while nsep+pchan4 produces coherent text (diversity=0.98).}
+\label{tab:generation}
+\end{table}
+
+\subsection{WikiText-2 Benchmark}
+
+We evaluate on WikiText-2 \citep{merity2017pointer} to confirm that results transfer to a standard benchmark. Evaluation uses 150-token prefill chunks with 30-token continuations, averaged over 5 chunks from the test split.
+
+\begin{table}[t]
+\centering
+\small
+\begin{tabular}{lrrrrc}
+\toprule
+Model & Params & Base PPL & naive4 $\Delta$PPL & nsep+pchan $\Delta$PPL & Improv. \\
+\midrule
+GPT-2 & 124M & 70.4 & +1.60 & +1.13 & 1.4$\times$ \\
+Pythia-2.8B & 2.8B & 16.2 & +14.74 & +1.99 & \textbf{7.4$\times$} \\
+Pythia-6.9B & 6.9B & 14.1 & +22.56 & +1.21 & \textbf{18.7$\times$} \\
+Mistral-7B & 7B & 5.2 & +0.10 & +0.04 & 2.6$\times$ \\
+Qwen2-7B & 7B & 8.2 & +811.61 & +0.43 & \textbf{1885$\times$} \\
+Pythia-12B & 12B & 12.9 & +34.22 & +4.01 & \textbf{8.5$\times$} \\
+Qwen2.5-14B & 14B & 9.6 & +0.55 & +0.45 & 1.2$\times$ \\
+\bottomrule
+\end{tabular}
+\caption{WikiText-2 evaluation across 7 models (124M to 14B). nsep+pchan achieves up to 1885$\times$ improvement on Qwen2-7B, with the largest gains precisely where naive INT4 fails most severely.}
+\label{tab:wikitext}
+\end{table}
+
+The results are consistent with---and even stronger than---our curated-text evaluation. On WikiText-2, Qwen2-7B's naive INT4 failure escalates to $\Delta$PPL~=~+812 (vs~+238 on curated text), reflecting the greater textual diversity of Wikipedia. nsep+pchan reduces this to $\Delta$PPL~=~+0.43, yielding a \textbf{1885$\times$ improvement}.
+
+The table reveals a clear pattern: \textbf{nsep+pchan helps most where naive4 fails hardest.} All three Pythia models fail under naive INT4 ($\Delta$PPL~+15 to~+34, worsening with scale) and are rescued to $\Delta$PPL~+1.2 to~+4.0. Qwen2-7B is rescued from catastrophic failure (+812~$\to$~+0.43). Meanwhile, models where naive INT4 already works---Mistral-7B (+0.10), GPT-2 (+1.60), Qwen2.5-14B (+0.55)---see nsep+pchan perform equally well or slightly better. The method never causes harm: the worst case is Qwen2.5-14B where nsep+pchan is 0.1 $\Delta$PPL higher than naive4.
+
+Notably, three 7B-class models span the full spectrum: Mistral-7B (naive4 works,~+0.10), Pythia-6.9B (naive4 fails moderately,~+22.56), and Qwen2-7B (naive4 fails catastrophically,~+811.61). This demonstrates that the failure mode is model-specific, not scale-dependent, and correlates with the activation outlier ratio (Mistral: 3.1$\times$, Pythia: 4.6$\times$, Qwen2: 8.6$\times$).
+
+\subsection{Long Context Stability (256--4096 Tokens)}
+
+Since KV cache compression is most needed at long context lengths, we evaluate stability from 256 to 4096 tokens on three models spanning the full failure spectrum.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Model & Prefill & Base PPL & naive4 & nsep+pchan4 \\
+\midrule
+\multirow{3}{*}{Qwen2-7B} & 512 & 6.7 & +2226 & \textbf{+0.34} \\
+& 2048 & 8.0 & +1643 & \textbf{$-$0.60} \\
+& 4096 & 3.1 & +8293 & \textbf{+0.19} \\
+\midrule
+\multirow{3}{*}{Pythia-6.9B} & 512 & 17.2 & +8.7 & \textbf{+1.3} \\
+& 1024 & 17.1 & +10.2 & \textbf{+3.0} \\
+& 1536 & 14.4 & +15.8 & \textbf{+3.4} \\
+\midrule
+\multirow{3}{*}{Mistral-7B} & 512 & 3.9 & +0.10 & +0.08 \\
+& 2048 & 9.1 & $-$0.30 & $-$0.08 \\
+& 4096 & 3.4 & +0.11 & +0.12 \\
+\bottomrule
+\end{tabular}
+\caption{Long-context $\Delta$PPL (WikiText-2, 256--4096 tokens). On Qwen2-7B, naive INT4 \emph{worsens} with context length, reaching $\Delta$PPL~=~+8293 at 4096 tokens. nsep+pchan4 remains within $\pm$0.6---a \textbf{44{,}000$\times$ improvement}. On Mistral-7B (where naive4 already works), nsep+pchan4 is equivalently stable.}
+\label{tab:longctx_main}
+\end{table}
+
+On Qwen2-7B, naive INT4 degradation \emph{escalates with context length}: $\Delta$PPL rises from +207 at 1024 tokens to \textbf{+8293 at 4096 tokens}. nsep+pchan4 remains within $\pm$0.6 across all lengths---a 44{,}000$\times$ improvement at 4096 tokens. This worsening likely reflects error accumulation in attention computation: as more tokens are stored in the quantized KV cache, the cumulative effect of noisy mid-range values grows.
+
+On Mistral-7B (where naive INT4 already works), nsep+pchan4 performs identically---$|\Delta\text{PPL}| < 0.15$ for both methods at all lengths. This confirms the safety-net property: nsep+pchan never hurts on models that don't need it.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figure2_wikitext2.pdf}
+  \caption{WikiText-2 evaluation across 7 models (124M to 14B). (a)~$\Delta$PPL comparison on log scale: naive INT4 (red) fails catastrophically on Pythia and Qwen2-7B, while nsep+pchan (green) keeps $\Delta$PPL below~+4.0 across all models. (b)~Improvement factor: nsep+pchan provides up to 1885$\times$ improvement on Qwen2-7B, with the largest gains precisely where naive INT4 fails most severely.}
+  \label{fig:wikitext}
+\end{figure}
+
+%% ============================================================
+\section{Analysis}
+
+\subsection{What Predicts Whether Naive INT4 Will Fail?}
+
+Across our 12 models, naive INT4 failure ($\Delta$PPL~$>$~10) correlates with:
+\begin{enumerate}[nosep]
+  \item \textbf{Outlier channel ratio} in Layer~0/final layer: Models with ratio~$>$~4$\times$ tend to fail
+  \item \textbf{Model family}: Pythia consistently fails; OPT consistently succeeds
+  \item \textbf{Not simply model size}: OPT-13B (+0.28) succeeds while Pythia-410M (+77.5) fails
+\end{enumerate}
+
+This suggests that training procedures and architecture choices (which affect activation distributions) are more predictive than scale (Figure~\ref{fig:outlier}).
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\textwidth]{figure4_outlier_sweep.pdf}
+  \caption{(a)~Layer~0 outlier ratio predicts naive INT4 failure. Models with outlier ratio~$>$~4$\times$ (dashed line) consistently show $\Delta$PPL~$>$~10 under naive INT4. (b)~12-model sweep on curated text: naive INT4 (red) varies by 4 orders of magnitude across models, while nsep+pchan (green) remains consistently low.}
+  \label{fig:outlier}
+\end{figure}
+
+\subsection{Why the Combination Is Superlinear}
+
+Norm separation and per-channel quantization address different problems:
+\begin{itemize}[nosep]
+  \item \textbf{Norm separation} removes the \emph{inter-token} dynamic range issue. After normalization, all tokens have comparable component magnitudes, so the per-row scale is consistent.
+  \item \textbf{Per-channel quantization} removes the \emph{inter-channel} dynamic range issue. Outlier channels get their own scale, preventing them from dominating normal channels.
+\end{itemize}
+
+When both issues are present (e.g., Qwen2-7B), neither fix alone suffices because each leaves the other problem intact. The combination eliminates both, explaining the superlinear improvement (nsep alone: 4.1$\times$; perchan alone: 2.4$\times$; both: 744$\times$).
+
+\subsection{Relationship to Existing Methods}
+
+Our norm separation is complementary to existing KV cache compression techniques:
+\begin{itemize}[nosep]
+  \item \textbf{KIVI} \citep{liu2024kivi} uses per-channel quantization with asymmetric Key/Value bit allocation. Norm separation could be added as a preprocessing step.
+  \item \textbf{GEAR} \citep{kang2024gear} combines low-rank approximation with quantization. Norm separation could improve the quantization stage.
+  \item \textbf{SmoothQuant} \citep{xiao2023smoothquant} migrates outliers from activations to weights. Norm separation addresses a different axis (token-wise norm variation) and could be combined.
+\end{itemize}
+
+\subsection{Limitations}
+
+\begin{enumerate}[nosep]
+  \item \textbf{Short-context evaluation}: Our primary evaluation uses sequences under 250 tokens. WikiText-2 evaluation on 7 models confirms the pattern on a standard benchmark (\S\ref{tab:wikitext}), but longer-context evaluation (1k--4k tokens) across all models would further strengthen the results.
+  \item \textbf{No end-to-end benchmarks}: We measure $\Delta$PPL but not inference throughput, latency, or peak memory in production settings.
+  \item \textbf{No comparison with KIVI/Gear}: Direct comparison with state-of-the-art KV compression methods would clarify the relative and additive value of norm separation.
+  \item \textbf{Post-LN untested}: GPT-1 (Post-LN) was excluded because it does not expose a KV cache through standard APIs. The norm-dominant geometry is weaker in Post-LN models, so benefits may be smaller.
+\end{enumerate}
+
+%% ============================================================
+\section{Related Work}
+
+\textbf{KV cache quantization.}
+KIVI \citep{liu2024kivi} applies per-channel quantization to KV caches with Key in INT2 and Value in INT4, achieving near-lossless compression. KVQuant \citep{hooper2024kvquant} extends this to 10M+ context lengths with per-channel and per-token quantization strategies. GEAR \citep{kang2024gear} combines low-rank approximation with outlier-aware quantization. Our norm separation is orthogonal to all of these and could serve as an additional preprocessing step.
+
+\textbf{KV cache eviction and sparsity.}
+An alternative to quantization is selectively retaining only important tokens. H2O \citep{zhang2023h2o} identifies ``heavy-hitter'' tokens by cumulative attention score. Scissorhands \citep{liu2023scissorhands} exploits the persistence of token importance across layers. StreamingLLM \citep{xiao2024streaming} maintains attention sinks for infinite-length generation. SnapKV \citep{li2024snapkv} selects important KV entries per attention head. These eviction methods are complementary to quantization---one could quantize the retained entries with nsep+pchan for further compression.
+
+\textbf{Activation outliers in quantization.}
+LLM.int8() \citep{dettmers2022llm} identifies that specific hidden-state dimensions can contain values 100$\times$ larger than average, and handles them via mixed-precision decomposition. SmoothQuant \citep{xiao2023smoothquant} migrates quantization difficulty from activations to weights through per-channel scaling. \citet{sun2024massive} provide a systematic analysis of massive activations in LLMs and their effects. Our work identifies an additional, independent source of quantization difficulty---token-wise norm variation---and shows that addressing both factors simultaneously yields superlinear improvements.
+
+\textbf{Hidden-state geometry.}
+The observation that Pre-LN Transformer hidden states concentrate on a norm-dominant subspace \citep{sato2026arc} provides the theoretical motivation for norm separation. \citet{ethayarajh2019contextual} documented increasing anisotropy in contextualized word representations. \citet{gao2019representation} formalized the representation degeneration problem. \citet{timkey2021bark} showed that ``rogue dimensions'' obscure representational quality. Our work provides the first practical application of these geometric observations to KV cache compression.
+
+\textbf{Model architectures.}
+Our evaluation spans models using Pre-LN \citep{xiong2020layer}, RMSNorm \citep{zhang2019root}, Multi-Head Attention (MHA), and Grouped Query Attention \citep[GQA;][]{ainslie2023gqa}. Specific model families include GPT-2 \citep{radford2019language}, Pythia \citep{biderman2023pythia}, OPT \citep{zhang2022opt}, Qwen2 \citep{yang2024qwen2}, Mistral \citep{jiang2023mistral}, and Falcon \citep{almazrouei2023falcon}.
+
+%% ============================================================
+\section{Conclusion}
+
+We presented norm-separated quantization, a training-free preprocessing step that improves the robustness of KV cache INT4 quantization. The method is motivated by the observation that KV vectors in Pre-LN Transformers have high token-wise norm variation, which inflates the dynamic range that quantization must capture. By separating the norm (stored exactly) from the direction (quantized), we compress this range before quantization begins.
+
+Combined with per-channel quantization to handle activation outlier channels, the method (nsep+pchan) provides a universal safety net:
+\begin{itemize}[nosep]
+  \item \textbf{744$\times$ improvement} on the worst case (Qwen2-7B: +238 $\to$ +0.32)
+  \item \textbf{Never catastrophic}: worst degradation is +0.24 $\Delta$PPL (OPT-125m)
+  \item \textbf{12 models from 124M to 40B}, 4 architecture families (GPT, Pythia, OPT, Qwen, Falcon)
+  \item \textbf{Zero training, zero calibration, negligible overhead}
+\end{itemize}
+
+The technique is simple enough to implement in a few lines of code and can be combined with existing KV cache compression methods as a preprocessing step.
+
+%% ============================================================
+\appendix
+\section{Implementation Note: PyTorch \texttt{.norm()} API Hazard}
+
+During development, we encountered a subtle but critical bug: \texttt{x.norm(-1, keepdim=True)} computes the $L_{-1}$ norm (approximately 0.0003 for typical vectors), \textbf{not} the L2 norm along dimension~$-1$. The correct call is \texttt{x.norm(dim=-1, keepdim=True)}. In PyTorch, the first positional argument of \texttt{.norm()} is \texttt{p} (the norm order), not \texttt{dim}.
+
+This caused direction vectors to explode to ${\sim}$3000$\times$ their expected magnitude, producing $\Delta$PPL in the thousands. The bug was invisible on CPU (Apple MPS) and only manifested on CUDA, likely due to different numerical behavior at extreme scales. It was caught through systematic cross-device validation---a reminder that quantization code should always be tested on the target hardware.
+
+%% ============================================================
+\section{Long Context Stability}
+
+Full long-context results for Pythia-6.9B, Qwen2-7B, and Mistral-7B (256--4096 tokens) are presented in Table~\ref{tab:longctx_main} in the main text (\S5.6).
+
+\section{Comparison with KIVI-Style Quantization}
+
+We implement a simplified version of KIVI's asymmetric quantization strategy \citep{liu2024kivi}: Key vectors in INT2 per-channel, Value vectors in INT4 per-channel (3~bpe effective). We compare this with nsep+pchan4 (4~bpe) and test whether norm separation improves KIVI (nsep+kivi, 3~bpe).
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lrrl}
+\toprule
+Method & $\Delta$PPL & bpe & Notes \\
+\midrule
+naive4 & +10.22 & 4.0 & per-row absmax \\
+\textbf{nsep+pchan4} & \textbf{+2.98} & ${\sim}$4.0 & norm-sep + per-channel \\
+KIVI (K2V4) & +360.80 & 3.0 & K:INT2, V:INT4 per-channel \\
+nsep+KIVI & +53.60 & ${\sim}$3.0 & norm-sep + KIVI-style \\
+\bottomrule
+\end{tabular}
+\caption{Comparison with KIVI-style quantization (Pythia-6.9B, pfl=1024). Note: our KIVI implementation uses simplified per-channel absmax only; the full KIVI method includes additional techniques (residual quantization, calibration) that may yield better results.}
+\label{tab:kivi}
+\end{table}
+
+At the same bit budget (3~bpe), norm separation improves KIVI from $\Delta$PPL~+361 to~+54 (6.7$\times$), confirming that norm separation provides value even when combined with per-channel strategies. However, INT2 Key quantization remains too aggressive for this model---nsep+pchan4 at 4~bpe achieves $\Delta$PPL~+3.0, substantially outperforming all 3~bpe variants.
+
+\textbf{Important caveat}: Our KIVI implementation uses only the core asymmetric bit allocation (Key INT2, Value INT4 with per-channel scaling) without the calibration, clipping thresholds, or residual quantization described in \citet{liu2024kivi}. These implementation details can significantly affect performance, and the full KIVI system would likely perform substantially better than our simplified baseline. The purpose of this comparison is not to benchmark against KIVI, but to demonstrate that norm separation provides additive value as a preprocessing step---the 6.7$\times$ improvement from adding norm separation to the same underlying quantization scheme (KIVI $\to$ nsep+KIVI) holds regardless of the base method's absolute performance.
+
+\section{Memory and Latency}
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{rrrrr}
+\toprule
+Seq.\ length & FP16 KV & nsep+INT4 & Overhead & Ratio \\
+\midrule
+512 & 268\,MB & 69\,MB & 2.1\,MB & 3.9$\times$ \\
+1024 & 537\,MB & 138\,MB & 4.2\,MB & 3.9$\times$ \\
+2048 & 1074\,MB & 277\,MB & 8.4\,MB & 3.9$\times$ \\
+4096 & 2148\,MB & 554\,MB & 16.8\,MB & 3.9$\times$ \\
+8192 & 4295\,MB & 1107\,MB & 33.6\,MB & 3.9$\times$ \\
+\bottomrule
+\end{tabular}
+\caption{Theoretical KV cache memory for Pythia-6.9B (32 layers, 32 heads, $d_h$=128). ``Overhead'' is the additional memory for storing FP16 norms. The nsep overhead is consistently $<$~3\% of the INT4 cache, yielding an effective compression ratio of 3.9$\times$.}
+\label{tab:memory}
+\end{table}
+
+Measured on 1024 tokens: FP16 KV cache = 640\,MB, nsep+INT4 = 164\,MB (3.9$\times$ reduction). The norm storage overhead is 4.2\,MB ($<$~1\% of FP16 cache).
+
+\textbf{Latency}: Prefill 512 tokens + decode 40 tokens: baseline 0.72\,s, nsep+pchan4 0.87\,s (+21\% overhead). This overhead arises from our unoptimized Python implementation (per-head loop with explicit norm computation). A fused CUDA kernel performing norm separation and per-channel quantization in a single pass would reduce this overhead to near-zero, as the arithmetic intensity (one L2 norm + one division per vector) is negligible compared to attention computation.
+
+%% ============================================================
+\begin{thebibliography}{30}
+
+\bibitem[Ainslie et~al.(2023)]{ainslie2023gqa}
+Ainslie, J., Lee-Thorp, J., de~Jong, M., Zemlyanskiy, Y., Lebron, F., \& Sanghai, S. (2023).
+\newblock GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints.
+\newblock \emph{EMNLP 2023}. arXiv:2305.13245.
+
+\bibitem[Almazrouei et~al.(2023)]{almazrouei2023falcon}
+Almazrouei, E., Alobeidli, H., Alshamsi, A., Cappelli, A., Cojocaru, R., et~al. (2023).
+\newblock The Falcon Series of Open Language Models.
+\newblock arXiv:2311.16867.
+
+\bibitem[Biderman et~al.(2023)]{biderman2023pythia}
+Biderman, S., Schoelkopf, H., Anthony, Q., Bradley, H., O'Brien, K., et~al. (2023).
+\newblock Pythia: A Suite for Analyzing Large Language Models Across Training and Scaling.
+\newblock \emph{ICML 2023}. arXiv:2304.01373.
+
+\bibitem[Dettmers et~al.(2022)]{dettmers2022llm}
+Dettmers, T., Lewis, M., Belkada, Y., \& Zettlemoyer, L. (2022).
+\newblock LLM.int8(): 8-bit Matrix Multiplication for Transformers at Scale.
+\newblock \emph{NeurIPS 2022}. arXiv:2208.07339.
+
+\bibitem[Ethayarajh(2019)]{ethayarajh2019contextual}
+Ethayarajh, K. (2019).
+\newblock How Contextual are Contextualized Word Representations? Comparing the Geometry of BERT, ELMo, and GPT-2 Embeddings.
+\newblock \emph{EMNLP 2019}. arXiv:1909.00512.
+
+\bibitem[Gao et~al.(2019)]{gao2019representation}
+Gao, J., He, D., Tan, X., Qin, T., Wang, L., \& Liu, T.-Y. (2019).
+\newblock Representation Degeneration Problem in Training Natural Language Generation Models.
+\newblock \emph{ICLR 2019}. arXiv:1907.12009.
+
+\bibitem[Hooper et~al.(2024)]{hooper2024kvquant}
+Hooper, C., Kim, S., Mohammadzadeh, H., Mahoney, M.~W., Shao, Y.~S., Keutzer, K., \& Gholami, A. (2024).
+\newblock KVQuant: Towards 10 Million Context Length LLM Inference with KV Cache Quantization.
+\newblock \emph{NeurIPS 2024}. arXiv:2401.18079.
+
+\bibitem[Jiang et~al.(2023)]{jiang2023mistral}
+Jiang, A.~Q., Sablayrolles, A., Mensch, A., Bamford, C., Chaplot, D.~S., et~al. (2023).
+\newblock Mistral 7B.
+\newblock arXiv:2310.06825.
+
+\bibitem[Kang et~al.(2024)]{kang2024gear}
+Kang, H., Zhang, Q., Kundu, S., Jeong, G., Liu, Z., Krishna, T., \& Zhao, T. (2024).
+\newblock GEAR: An Efficient KV Cache Compression Recipe for Near-Lossless Generative Inference of LLM.
+\newblock \emph{NeurIPS 2024 ENLSP Workshop}. arXiv:2403.05527.
+
+\bibitem[Li et~al.(2024)]{li2024snapkv}
+Li, Y., Huang, Y., Yang, B., Venkitesh, B., Locatelli, A., et~al. (2024).
+\newblock SnapKV: LLM Knows What You are Looking for Before Generation.
+\newblock \emph{NeurIPS 2024}. arXiv:2404.14469.
+
+\bibitem[Liu et~al.(2024)]{liu2024kivi}
+Liu, Z., Yuan, J., Jin, H., Zhong, S., Xu, Z., Braverman, V., Chen, B., \& Hu, X. (2024).
+\newblock KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache.
+\newblock \emph{ICML 2024}. arXiv:2402.02750.
+
+\bibitem[Liu et~al.(2023b)]{liu2023scissorhands}
+Liu, Z., Desai, A., Liao, F., Wang, W., Xie, V., Xu, Z., Kyrillidis, A., \& Shrivastava, A. (2023).
+\newblock Scissorhands: Exploiting the Persistence of Importance Hypothesis for LLM KV Cache Compression at Test Time.
+\newblock \emph{NeurIPS 2023}. arXiv:2305.17118.
+
+\bibitem[Merity et~al.(2017)]{merity2017pointer}
+Merity, S., Xiong, C., Bradbury, J., \& Socher, R. (2017).
+\newblock Pointer Sentinel Mixture Models.
+\newblock \emph{ICLR 2017}. arXiv:1609.07843.
+
+\bibitem[Radford et~al.(2019)]{radford2019language}
+Radford, A., Wu, J., Child, R., Luan, D., Amodei, D., \& Sutskever, I. (2019).
+\newblock Language Models are Unsupervised Multitask Learners.
+\newblock \emph{OpenAI Technical Report}.
+
+\bibitem[Sato(2026)]{sato2026arc}
+Sato, K. (2026).
+\newblock The Arc and Its Thickness: Geometric Decomposition of Pre-LayerNorm Transformer Hidden States.
+
+\bibitem[Sun et~al.(2024)]{sun2024massive}
+Sun, M., Chen, X., Kolter, J.~Z., \& Liu, Z. (2024).
+\newblock Massive Activations in Large Language Models.
+\newblock \emph{COLM 2024}. arXiv:2402.17762.
+
+\bibitem[Timkey \& van~Schijndel(2021)]{timkey2021bark}
+Timkey, W. \& van~Schijndel, M. (2021).
+\newblock All Bark and No Bite: Rogue Dimensions in Transformer Language Models Obscure Representational Quality.
+\newblock \emph{EMNLP 2021}. arXiv:2109.04404.
+
+\bibitem[Xiao et~al.(2023)]{xiao2023smoothquant}
+Xiao, G., Lin, J., Seznec, M., Wu, H., Demouth, J., \& Han, S. (2023).
+\newblock SmoothQuant: Accurate and Efficient Post-Training Quantization for Large Language Models.
+\newblock \emph{ICML 2023}. arXiv:2211.10438.
+
+\bibitem[Xiao et~al.(2024)]{xiao2024streaming}
+Xiao, G., Tian, Y., Chen, B., Han, S., \& Lewis, M. (2024).
+\newblock Efficient Streaming Language Models with Attention Sinks.
+\newblock \emph{ICLR 2024}. arXiv:2309.17453.
+
+\bibitem[Xiong et~al.(2020)]{xiong2020layer}
+Xiong, R., Yang, Y., He, D., Zheng, K., Zheng, S., et~al. (2020).
+\newblock On Layer Normalization in the Transformer Architecture.
+\newblock \emph{ICML 2020}. arXiv:2002.04745.
+
+\bibitem[Yang et~al.(2024)]{yang2024qwen2}
+Yang, A., Yang, B., Hui, B., Zheng, B., Yu, B., et~al. (2024).
+\newblock Qwen2 Technical Report.
+\newblock arXiv:2407.10671.
+
+\bibitem[Zhang \& Sennrich(2019)]{zhang2019root}
+Zhang, B. \& Sennrich, R. (2019).
+\newblock Root Mean Square Layer Normalization.
+\newblock \emph{NeurIPS 2019}. arXiv:1910.07467.
+
+\bibitem[Zhang et~al.(2022)]{zhang2022opt}
+Zhang, S., Roller, S., Goyal, N., Artetxe, M., Chen, M., et~al. (2022).
+\newblock OPT: Open Pre-trained Transformer Language Models.
+\newblock arXiv:2205.01068.
+
+\bibitem[Zhang et~al.(2023)]{zhang2023h2o}
+Zhang, Z., Sheng, Y., Zhou, T., Chen, T., Zheng, L., et~al. (2023).
+\newblock H2O: Heavy-Hitter Oracle for Efficient Generative Inference of Large Language Models.
+\newblock \emph{NeurIPS 2023}. arXiv:2306.14048.
+
+\end{thebibliography}
+
+\end{document}

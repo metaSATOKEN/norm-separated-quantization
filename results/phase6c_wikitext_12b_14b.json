@@ -1,0 +1,11 @@
+{
+  "experiment": "phase6c_wikitext_12b_14b",
+  "timestamp": "2026-04-12T00:40:19.355907",
+  "complete_wikitext2_table": [
+    {"model": "GPT-2",       "params": "124M", "baseline_ppl": 70.36, "naive4_dppl": 1.60,   "nsep_pchan4_dppl": 1.13,  "improvement": 1.4},
+    {"model": "Pythia-6.9B", "params": "6.9B", "baseline_ppl": 14.08, "naive4_dppl": 22.56,  "nsep_pchan4_dppl": 1.21,  "improvement": 18.7},
+    {"model": "Qwen2-7B",    "params": "7B",   "baseline_ppl": 8.15,  "naive4_dppl": 811.61, "nsep_pchan4_dppl": 0.43,  "improvement": 1885.0},
+    {"model": "Pythia-12B",  "params": "12B",  "baseline_ppl": 12.88, "naive4_dppl": 34.22,  "nsep_pchan4_dppl": 4.01,  "improvement": 8.5},
+    {"model": "Qwen2.5-14B", "params": "14B",  "baseline_ppl": 9.61,  "naive4_dppl": 0.55,   "nsep_pchan4_dppl": 0.45,  "improvement": 1.2}
+  ]
+}

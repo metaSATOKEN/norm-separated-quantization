@@ -1,0 +1,66 @@
+{
+  "experiment": "phase4c_long_context_fixed",
+  "timestamp": "2026-04-11T05:06:53.608178",
+  "device": "cuda (Colab T4)",
+  "bug_fix": ".norm(-1) -> .norm(dim=-1): PyTorch .norm() first positional arg is p (norm order), not dim. .norm(-1) computes L_{-1} norm ≈ 0.0003, causing direction vectors to explode to ~11000. .norm(dim=-1) computes L2 norm along last dimension ≈ 6.0.",
+  "models_tested": ["GPT-2 (124M)", "Pythia-410M"],
+  "results": {
+    "GPT-2": {
+      "length": [
+        {"tlen": 200, "pfl": 36, "bp": 45.638, "m": {"naive4": {"dp": 4.1446}, "nsep4": {"dp": 3.777}, "npca32": {"dp": 2.3061}, "combo": {"dp": 3.0754}}},
+        {"tlen": 400, "pfl": 135, "bp": 106.923, "m": {"naive4": {"dp": 12.9905}, "nsep4": {"dp": 13.1515}, "npca32": {"dp": 16.4166}, "combo": {"dp": 13.1515}}},
+        {"tlen": 700, "pfl": 218, "bp": 16.597, "m": {"naive4": {"dp": 0.1648}, "nsep4": {"dp": 0.116}, "npca32": {"dp": 0.9027}, "combo": {"dp": 0.637}}}
+      ],
+      "stability": {
+        "naive4": {"vals": [4.1446, 12.9905, 0.1648], "cv": 0.93},
+        "nsep4": {"vals": [3.777, 13.1515, 0.116], "cv": 0.966},
+        "npca32": {"vals": [2.3061, 16.4166, 0.9027], "cv": 1.071},
+        "combo": {"vals": [3.0754, 13.1515, 0.637], "cv": 0.964}
+      },
+      "generation": {
+        "sampling": "top-p=0.9, temp=0.8",
+        "all_uniq_1.0": true,
+        "repetition": false,
+        "examples": {
+          "baseline": "The technology has improved in recent years, with a major breakthrough in Augmented Reality...",
+          "nsep4": "More recently, AI has evolved into a basic, generalized, and universal tool for solving complex problems...",
+          "combo": "Astonishingly, most of the recent advances in AI come from algorithms..."
+        }
+      }
+    },
+    "Pythia-410M": {
+      "length": [
+        {"tlen": 200, "pfl": 37, "bp": 31.068, "m": {"naive4": {"dp": 45.3546}, "nsep4": {"dp": 25.9285}, "npca32": {"dp": 0.8932}, "combo": {"dp": 25.9334}}},
+        {"tlen": 400, "pfl": 139, "bp": 44.24, "m": {"naive4": {"dp": 99.1793}, "nsep4": {"dp": 31.7849}, "npca32": {"dp": 14.8506}, "combo": {"dp": 42.5334}}},
+        {"tlen": 700, "pfl": 221, "bp": 12.51, "m": {"naive4": {"dp": 32.184}, "nsep4": {"dp": 9.8731}, "npca32": {"dp": 4.9901}, "combo": {"dp": 15.5332}}}
+      ],
+      "stability": {
+        "naive4": {"vals": [45.3546, 99.1793, 32.184], "cv": 0.492, "tag": "STABLE"},
+        "nsep4": {"vals": [25.9285, 31.7849, 9.8731], "cv": 0.411, "tag": "STABLE"},
+        "npca32": {"vals": [0.8932, 14.8506, 4.9901], "cv": 0.848},
+        "combo": {"vals": [25.9334, 42.5334, 15.5332], "cv": 0.397, "tag": "STABLE"}
+      },
+      "nsep4_vs_naive4_improvement": {
+        "pfl_37": "1.75x (45.4 -> 25.9)",
+        "pfl_139": "3.12x (99.2 -> 31.8)",
+        "pfl_221": "3.26x (32.2 -> 9.9)"
+      },
+      "generation": {
+        "sampling": "top-p=0.9, temp=0.8",
+        "all_uniq_1.0": true,
+        "repetition": false,
+        "examples": {
+          "baseline": "Some areas of the field were given a boost by IBM...",
+          "nsep4": "In the same period, the field attracted the public as it was used in the development of training programs...",
+          "npca32": "Many major corporations saw an opportunity in a new market..."
+        }
+      }
+    }
+  },
+  "summary": {
+    "norm_sep_advantage_confirmed": "Pythia-410M: nsep4 beats naive4 by 1.7-3.3x consistently across context lengths",
+    "long_context_stable": "No degradation with longer prefill. ΔPPL decreases when baseline PPL is lower (longer, more predictable context).",
+    "generation_quality": "All methods produce coherent text with top-p sampling. No repetition (uniq=1.0). Greedy decoding repetition was a decoding issue, not compression.",
+    "cv_high_but_expected": "CV is high because baseline PPL varies dramatically with text content (45-107 for GPT-2). Absolute ΔPPL scales with baseline PPL."
+  }
+}
