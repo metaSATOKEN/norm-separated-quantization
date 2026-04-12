@@ -1,7 +1,7 @@
 # ============================================================
 # Phase 7: Appendix Experiments
 # ============================================================
-# Reviewer concerns を解消する 3 つの追加実験:
+# Three additional experiments to address reviewer concerns:
 #   A. Long context stability (1k-4k tokens)
 #   B. KIVI-style baseline comparison
 #   C. Memory measurement

@@ -2,24 +2,24 @@
 """
 Phase 0: Structure Verification (Arc-Compression v2.0)
 
-Arc論文の幾何学構造を再現し、圧縮前提が成立するか検証する。
-結果は全てJSONで出力。
+Reproduce the geometric structure from the Arc paper and verify whether
+the compression premise holds. All results are output as JSON.
 
-検証項目:
-  1. PC1 variance explained (>90% を期待)
-  2. corr(PC1, norm) (|r| > 0.96 を期待)
-  3. norm-normalization 後の PC1 variance collapse
-  4. residual subspace の position / difficulty signal
-  5. 複数テキストタイプでの安定性
+Verification items:
+  1. PC1 variance explained (expect >90%)
+  2. corr(PC1, norm) (expect |r| > 0.96)
+  3. PC1 variance collapse after norm-normalization
+  4. Position / difficulty signal in the residual subspace
+  5. Stability across multiple text types
 
-GO条件:
+GO conditions:
   - |corr(PC1, norm)| > 0.96
-  - norm-normalization により PC1 variance が大幅低下
-  - residual で少なくとも position signal が確認される
+  - Norm-normalization causes a large drop in PC1 variance
+  - At least a position signal is confirmed in the residual
 
-NO-GO条件:
-  - norm dominance が再現しない
-  - residual 構造がノイズ的で安定しない
+NO-GO conditions:
+  - Norm dominance is not reproduced
+  - Residual structure is noise-like and unstable
 """
 
 import sys
@@ -277,12 +277,12 @@ def compute_surprisals(logits: torch.Tensor, input_ids: np.ndarray) -> np.ndarra
 
 def evaluate_gate1(results: dict) -> dict:
     """
-    Gate 1: 構造存在 — norm-dominant geometry は再現するか
+    Gate 1: Structure Existence -- does the norm-dominant geometry reproduce?
 
     Criteria:
       - |corr(PC1, norm)| > 0.96 (across all models/texts)
-      - norm-normalization により PC1 variance が大幅低下
-      - residual で少なくとも position signal が確認される
+      - Norm-normalization causes a large drop in PC1 variance
+      - At least a position signal is confirmed in the residual
     """
     all_corrs = []
     all_collapses = []
@@ -325,7 +325,7 @@ def evaluate_gate1(results: dict) -> dict:
     min_collapse = min(all_collapses)
     min_pos_signal = min(position_signals)
 
-    # GO/NO-GO判定
+    # GO/NO-GO decision
     norm_dominant = min_corr > 0.96
     variance_collapses = min_collapse > 0.3  # PC1 variance drops by at least 30pp
     position_exists = min_pos_signal > 0.3

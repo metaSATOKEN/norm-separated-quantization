@@ -16,8 +16,8 @@ from dataclasses import dataclass
 @dataclass
 class CompressedState:
     """Compressed representation of a hidden state."""
-    norms: torch.Tensor          # (T,) — per-token norms
-    residual_proj: torch.Tensor  # (T, k) — projection onto basis
+    norms: torch.Tensor          # (T,) -- per-token norms
+    residual_proj: torch.Tensor  # (T, k) -- projection onto basis
     method: str                  # compression method name
     k: int                       # rank of residual
     original_shape: tuple        # (T, d_model)

@@ -1,14 +1,15 @@
 # ============================================================
 # Phase 6b: WikiText-2 PPL (7B Models) + Figure 1 (Qwen2-7B)
 # ============================================================
-# Colab Blackwell GPU で実行。
+# Run on Colab Blackwell GPU.
 #
 # Part A: WikiText-2 PPL on Pythia-6.9B + Qwen2-7B
-#         → 論文 Section 5.5 のテーブルに追加
-# Part B: Figure 1 (KV分布ヒストグラム) on Qwen2-7B
-#         → GPT-2 版のバックアップ / 差し替え用
+#         -- Added to paper Section 5.5 table
+# Part B: Figure 1 (KV distribution histogram) on Qwen2-7B
+#         -- Backup / replacement for GPT-2 version
 #
-# 設計: 1モデルずつロード→実験→削除。片方が詰まっても他方の結果は残る。
+# Design: Load one model at a time -- run experiment -- delete.
+#         Even if one model fails, the other's results survive.
 # ============================================================
 
 # === CELL 1: Setup ===
@@ -100,7 +101,7 @@ def compress_cache(past, method_name):
 def eval_wikitext(model_name, hf_id, dtype):
     """Run WikiText-2 evaluation for a single model. Returns results dict or None on failure."""
     print(f"\n{'━'*60}")
-    print(f"  {model_name} — WikiText-2")
+    print(f"  {model_name} -- WikiText-2")
     print(f"{'━'*60}")
 
     try:
@@ -230,7 +231,7 @@ print(f"\n  {'Model':<15} {'Base PPL':>9} {'naive4':>10} {'nsep+pc':>10} {'impro
 print(f"  {'-'*55}")
 for r in all_for_table:
     n = r["naive4_dppl"]; s = r["nsep_pchan4_dppl"]
-    imp = f"{abs(n)/abs(s):.1f}x" if abs(s) > 0.01 else "—"
+    imp = f"{abs(n)/abs(s):.1f}x" if abs(s) > 0.01 else "--"
     print(f"  {r['model']:<15} {r['baseline_ppl']:>9.2f} {n:>+10.4f} {s:>+10.4f} {imp:>8}")
 
 # ════════════════════════════════════════════════════════════════════════════
@@ -239,7 +240,7 @@ for r in all_for_table:
 
 if r2 is not None:
     print(f"\n{'='*60}")
-    print("PART B: Figure 1 — Qwen2-7B KV Distribution")
+    print("PART B: Figure 1 -- Qwen2-7B KV Distribution")
     print(f"{'='*60}")
 
     tok_q = AutoTokenizer.from_pretrained("Qwen/Qwen2-7B")
@@ -287,7 +288,7 @@ if r2 is not None:
 
     ax = axes[0, 0]
     ax.hist(k0_vals, bins=200, color='#e74c3c', alpha=0.7, edgecolor='none', density=True)
-    ax.set_title('(a) Layer 0 Key — Raw Values')
+    ax.set_title('(a) Layer 0 Key -- Raw Values')
     ax.set_xlabel('Value'); ax.set_ylabel('Density')
     rng = max(abs(k0_vals.min()), abs(k0_vals.max())) * 1.1
     ax.set_xlim(-rng, rng)
@@ -297,7 +298,7 @@ if r2 is not None:
 
     ax = axes[0, 1]
     ax.hist(dirs0, bins=200, color='#2ecc71', alpha=0.7, edgecolor='none', density=True)
-    ax.set_title('(b) Layer 0 Key — After Norm Separation')
+    ax.set_title('(b) Layer 0 Key -- After Norm Separation')
     ax.set_xlabel('Value'); ax.set_ylabel('Density')
     ax.set_xlim(-0.5, 0.5)
     ax.annotate(f'range: [{dirs0.min():.2f}, {dirs0.max():.2f}]\nstd: {dirs0.std():.3f}',
@@ -306,7 +307,7 @@ if r2 is not None:
 
     ax = axes[1, 0]
     ax.hist(k_mid_vals, bins=200, color='#3498db', alpha=0.7, edgecolor='none', density=True)
-    ax.set_title(f'(c) Layer {mid} Key — Raw Values')
+    ax.set_title(f'(c) Layer {mid} Key -- Raw Values')
     ax.set_xlabel('Value'); ax.set_ylabel('Density')
     rng2 = max(abs(k_mid_vals.min()), abs(k_mid_vals.max())) * 1.1
     ax.set_xlim(-rng2, rng2)
@@ -316,7 +317,7 @@ if r2 is not None:
 
     ax = axes[1, 1]
     ax.hist(dirs_mid, bins=200, color='#2ecc71', alpha=0.7, edgecolor='none', density=True)
-    ax.set_title(f'(d) Layer {mid} Key — After Norm Separation')
+    ax.set_title(f'(d) Layer {mid} Key -- After Norm Separation')
     ax.set_xlabel('Value'); ax.set_ylabel('Density')
     ax.set_xlim(-0.5, 0.5)
     ax.annotate(f'range: [{dirs_mid.min():.2f}, {dirs_mid.max():.2f}]\nstd: {dirs_mid.std():.3f}',

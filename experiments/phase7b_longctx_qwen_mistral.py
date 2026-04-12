@@ -1,5 +1,5 @@
 # ============================================================
-# Phase 7b: Long Context — Qwen2-7B + Mistral-7B
+# Phase 7b: Long Context -- Qwen2-7B + Mistral-7B
 # ============================================================
 # Reviewer request: test long context on
 #   Qwen2-7B (catastrophic failure case)
@@ -71,7 +71,7 @@ def compress_cache(past, mn):
 
 def eval_longctx(model_name, hf_id, dtype):
     print(f"\n{'━'*60}")
-    print(f"  {model_name} — Long Context")
+    print(f"  {model_name} -- Long Context")
     print(f"{'━'*60}")
 
     tok = AutoTokenizer.from_pretrained(hf_id)

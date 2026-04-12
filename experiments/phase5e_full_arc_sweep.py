@@ -1,17 +1,17 @@
 # ============================================================
 # Phase 5e: Full Arc Paper Model Sweep
 # ============================================================
-# Arc論文の全14モデルで nsep+pchan4 を検証。
-# 既に7モデル検証済み。残り6モデルを追加。
-# (Mistral-7B はgatedでスキップ)
+# Verify nsep+pchan4 across all 14 models from the Arc paper.
+# 7 models already verified. Adding the remaining 6.
+# (Mistral-7B is gated, so it is skipped.)
 #
-# 新規テスト:
-#   GPT-1       (110M, Post-LN) — 負の対照群
+# New tests:
+#   GPT-1       (110M, Post-LN) -- negative control
 #   OPT-125m    (125M, Pre-LN)
 #   OPT-1.3B    (1.3B, Pre-LN)
 #   Pythia-2.8B (2.8B, Pre-LN)
 #   OPT-13B     (13B, Pre-LN)
-#   Falcon-40B  (40B, Pre-LN) — 102GB VRAMでギリギリ
+#   Falcon-40B  (40B, Pre-LN) -- barely fits in 102GB VRAM
 # ============================================================
 
 # === CELL 1 ===
@@ -113,7 +113,7 @@ CL = 30  # continuation length
 # ── Models to test ─────────────────────────────────────────────────────────
 
 MODELS = [
-    # Small models (< 1B) — fast
+    # Small models (< 1B) -- fast
     ("GPT-1 (Post-LN)", "openai-community/openai-gpt", torch.float32, "Post-LN"),
     ("OPT-125m",        "facebook/opt-125m",            torch.float32, "Pre-LN"),
     # Medium models (1-3B)
@@ -121,7 +121,7 @@ MODELS = [
     ("Pythia-2.8B",     "EleutherAI/pythia-2.8b",       torch.float16, "Pre-LN"),
     # Large models (13B+)
     ("OPT-13B",         "facebook/opt-13b",             torch.float16, "Pre-LN"),
-    # XL model (40B) — try last, may OOM
+    # XL model (40B) -- try last, may OOM
     ("Falcon-40B",      "tiiuae/falcon-40b",            torch.float16, "Pre-LN"),
 ]
 
@@ -241,7 +241,7 @@ prior = {
 # Add new results
 for mname, mdata in all_results.items():
     prior[mname] = {
-        "params": "—",
+        "params": "--",
         "ln": mdata["ln_type"],
         "hd": mdata["head_dim"],
         "naive4": mdata["methods"].get("naive4", "?"),
@@ -253,7 +253,7 @@ print(f"  {'-'*70}")
 for name, d in prior.items():
     n = d["naive4"]; s = d["nsep_pc4"]
     if isinstance(n, (int,float)) and isinstance(s, (int,float)) and s != 0:
-        imp = f"{abs(n)/abs(s):.0f}x" if abs(s) > 0.01 else "—"
+        imp = f"{abs(n)/abs(s):.0f}x" if abs(s) > 0.01 else "--"
     else:
         imp = "?"
     n_s = f"{n:>+9.2f}" if isinstance(n, (int,float)) else f"{'?':>9}"

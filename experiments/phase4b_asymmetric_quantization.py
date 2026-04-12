@@ -2,21 +2,21 @@
 """
 Phase 4b: K/V Asymmetric + Norm-Separated Quantization
 
-Phase 4 の発見:
-  - norm_pca が plain PCA を k=48 で 13.4x 上回る
-  - Key cosine (0.92-0.99) >> Value cosine (0.82-0.90): K は圧縮に強い
-  → K/V 非対称圧縮 + norm 分離量子化を検証
+Phase 4 findings:
+  - norm_pca outperforms plain PCA by 13.4x at k=48
+  - Key cosine (0.92-0.99) >> Value cosine (0.82-0.90): K is more resilient to compression
+  -> Verify K/V asymmetric compression + norm-separated quantization
 
-実験内容:
-  A. K/V 非対称圧縮: K に強圧縮 (小k)、V に弱圧縮 (大k)
-  B. Norm-separated quantization: norm 分離 → 方向ベクトルを量子化
-     - baseline: 直接量子化 (naive INT8/INT4)
-     - proposed: norm分離 → 方向量子化 → 再構成
-  C. 組み合わせ: 非対称 + norm分離量子化
+Experiments:
+  A. K/V asymmetric compression: strong compression (small k) for K, gentle compression (large k) for V
+  B. Norm-separated quantization: separate norm -> quantize direction vector
+     - baseline: direct quantization (naive INT8/INT4)
+     - proposed: norm separation -> direction quantization -> reconstruction
+  C. Combination: asymmetric + norm-separated quantization
 
-量子化方式:
+Quantization scheme:
   - absmax symmetric: x_q = round(x / scale * (2^(b-1)-1))
-  - per-token granularity (各トークンベクトルを独立に量子化)
+  - per-token granularity (each token vector quantized independently)
 """
 
 import sys
@@ -66,7 +66,7 @@ CONTINUATION_TEXT = (
 
 def quantize_absmax(x: torch.Tensor, bits: int) -> torch.Tensor:
     """
-    Absmax symmetric quantization → dequantization (simulated).
+    Absmax symmetric quantization -> dequantization (simulated).
     Per-token granularity: each row quantized independently.
     """
     qmax = 2 ** (bits - 1) - 1
@@ -86,7 +86,7 @@ def quantize_norm_separated(x: torch.Tensor, bits: int) -> torch.Tensor:
     norms = x.norm(dim=-1, keepdim=True).clamp(min=1e-12)
     directions = x / norms
 
-    # Direction vectors are near unit norm → tighter dynamic range → better quantization
+    # Direction vectors are near unit norm -- tighter dynamic range -- better quantization
     directions_q = quantize_absmax(directions, bits)
 
     # Re-normalize to prevent drift
@@ -377,7 +377,7 @@ def main():
     # Experiment B: Quantization comparison
     # ════════════════════════════════════════════════════════════════════════
     print(f"\n{'━' * 60}")
-    print(f"  Exp B: Quantization — naive vs norm-separated")
+    print(f"  Exp B: Quantization -- naive vs norm-separated")
     print(f"{'━' * 60}")
 
     quant_results = []
@@ -494,7 +494,7 @@ def main():
     all_configs = (asymmetric_results + quant_results +
                    asym_quant_results + combined_results)
 
-    # Sort by |ΔPPL| < 1.0, then by compression
+    # Sort by |DPPL| < 1.0, then by compression
     viable = [r for r in all_configs if abs(r["delta_ppl"]) < 1.0]
     viable.sort(key=lambda r: -r["memory"]["effective_compression"])
 

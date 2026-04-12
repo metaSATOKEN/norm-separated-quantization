@@ -1,15 +1,15 @@
 # ============================================================
 # Phase 5c: Arc Prior + Outlier-Aware Quantization
 # ============================================================
-# Finding 8: Qwen2-7B Layer 0 の outlier (absmax=167) が INT4 を破壊する。
-# SmoothQuant 的アプローチで outlier チャネルを分離し、
-# Arc prior (norm 分離) と組み合わせて検証する。
+# Finding 8: The outlier (absmax=167) in Qwen2-7B Layer 0 destroys INT4.
+# We use a SmoothQuant-style approach to separate outlier channels
+# and combine it with the Arc prior (norm separation) for verification.
 #
 # Methods:
 #   1. naive:     per-row absmax INT4 (baseline)
 #   2. nsep:      norm-sep + per-row absmax INT4
 #   3. outlier:   outlier channels in fp16 + rest INT4
-#   4. nsep+out:  norm-sep → outlier-sep → rest INT4 (full combo)
+#   4. nsep+out:  norm-sep -> outlier-sep -> rest INT4 (full combo)
 #   5. perchan:   per-channel absmax INT4
 #   6. nsep+pchan: norm-sep + per-channel INT4
 #
@@ -315,10 +315,10 @@ for mname, mdata in all_results.items():
     full = {r["method"]: r["dppl"] for r in mdata["full_model"]}
     l0 = {r["method"]: r["dppl"] for r in mdata["layer0_only"]}
     for m in ["naive4", "nsep4", "outlier4", "nsep+out4", "perchan4", "nsep+pchan4"]:
-        f_val = full.get(m, "—")
-        l_val = l0.get(m, "—")
-        f_str = f"{f_val:>+12.4f}" if isinstance(f_val, float) else f"{'—':>12}"
-        l_str = f"{l_val:>+14.4f}" if isinstance(l_val, float) else f"{'—':>14}"
+        f_val = full.get(m, "--")
+        l_val = l0.get(m, "--")
+        f_str = f"{f_val:>+12.4f}" if isinstance(f_val, float) else f"{'--':>12}"
+        l_str = f"{l_val:>+14.4f}" if isinstance(l_val, float) else f"{'--':>14}"
         print(f"    {m:>14} {f_str} {l_str}")
 
 print("\n" + "="*70)

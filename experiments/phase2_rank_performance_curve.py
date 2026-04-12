@@ -2,13 +2,15 @@
 """
 Phase 2 (Lightweight): Rank-Performance Curve
 
-Phase 1 の結果を受けて、高 k 領域まで sweep し曲線の形を確認する。
-目的: sweet spot（knee）があるか、単調に下がるだけかを定量化。
+Following Phase 1 results, sweep up to high k values and examine the
+shape of the curve.
+Goal: quantify whether a sweet spot (knee) exists, or performance
+simply degrades monotonically.
 
-k 候補: 2, 4, 8, 16, 32, 64, 128, 192, 256, 384, 512
-対象: GPT-2 の耐性上位層（L8, L9, L10）+ 中間層（L6）
+k candidates: 2, 4, 8, 16, 32, 64, 128, 192, 256, 384, 512
+Targets: GPT-2 top-tolerance layers (L8, L9, L10) + mid layer (L6)
 
-結果: JSON + 標準出力に曲線データ
+Results: JSON + curve data to stdout
 """
 
 import sys
@@ -72,8 +74,8 @@ BASIS_TEXT = (
 
 class DirectPCAHook:
     """
-    Alternative: 直接 PCA truncation（norm分離なし）
-    h ≈ mean + sum(c_i * v_i) for top-k PCA components
+    Alternative: direct PCA truncation (no norm separation)
+    h ~ mean + sum(c_i * v_i) for top-k PCA components
     """
     def __init__(self, pca_components, pca_mean):
         self.V = pca_components   # (k, d_model)
@@ -108,7 +110,7 @@ class DirectPCAHook:
 
 
 class NormPCAHook:
-    """norm分離版 (Phase 1 と同じ)"""
+    """Norm-separated version (same as Phase 1)"""
     def __init__(self, basis, mean_direction):
         self.basis = basis
         self.mean_direction = mean_direction

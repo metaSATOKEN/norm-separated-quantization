@@ -2,23 +2,23 @@
 """
 Phase 4b Cross-Model: Robustness Verification
 
-Phase 4b の主要 Finding を GPT-2 以外のモデルで再現確認。
+Reproduce key findings from Phase 4b on models other than GPT-2.
 
-対象モデル:
+Target models:
   - GPT-2 (124M): 12 layers, 12 KV heads, head_dim=64 (MHA)
   - Pythia-410M:   24 layers, 16 KV heads, head_dim=64 (MHA)
   - Qwen2-0.5B:    24 layers,  2 KV heads, head_dim=64 (GQA!)
 
-検証する Finding:
+Findings to verify:
   1. norm_pca > plain PCA in KV cache (Finding 1)
   2. norm_sep quantization > naive quantization at low bits (Finding 2)
   3. K cosine > V cosine across models (Finding 3)
   4. PCA + quantization combo (Finding 4)
 
 GQA note:
-  Qwen2 は KV heads=2 のため、KV cache が元々小さい。
-  per-head PCA の seq_len 方向の低ランク近似は依然有効だが、
-  圧縮の実用的意味合いが異なる。
+  Qwen2 has only 2 KV heads, so the KV cache is inherently small.
+  Per-head PCA low-rank approximation along the seq_len axis is still
+  effective, but the practical implications of compression differ.
 """
 
 import sys
@@ -385,7 +385,7 @@ def main():
               f"V={f3['value_mean_cosine']:.4f}  "
               f"K>V in {f3['key_gt_value_layers']}/{f3['total_layers']} layers")
 
-    # Finding 4: Best combo ΔPPL
+    # Finding 4: Best combo DPPL across models
     print(f"\n  Finding 4: norm_sep INT4 ΔPPL across models")
     for m in out["models"]:
         ns4 = [r for r in m["finding4_combos"] if r["label"] == "norm_sep INT4"][0]

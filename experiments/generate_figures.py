@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate all paper figures from existing JSON results.
-No model loading needed — purely visualization.
+No model loading needed -- purely visualization.
 """
 
 import json, numpy as np
@@ -80,7 +80,7 @@ print(f"  Saved: figure2_wikitext2.png/pdf")
 
 
 # ════════════════════════════════════════════════════════════════════════════
-# Figure 3: Ablation — Orthogonal Composition (Qwen2-7B)
+# Figure 3: Ablation -- Orthogonal Composition (Qwen2-7B)
 # ════════════════════════════════════════════════════════════════════════════
 print("Figure 3: Ablation (Qwen2-7B)...")
 
@@ -103,7 +103,7 @@ ax.set_yscale('log')
 ax.set_ylabel('ΔPPL (log scale)')
 ax.set_xticks(range(len(methods)))
 ax.set_xticklabels(methods, fontsize=10)
-ax.set_title('Figure 3: Ablation — Neither Technique Alone Suffices (Qwen2-7B, INT4)')
+ax.set_title('Figure 3: Ablation -- Neither Technique Alone Suffices (Qwen2-7B, INT4)')
 
 # Add value labels
 for i, (bar, val) in enumerate(zip(bars, dppl)):
@@ -264,8 +264,8 @@ print(f"  Saved: figure5_anomaly.png/pdf")
 
 # ════════════════════════════════════════════════════════════════════════════
 print(f"\nAll figures saved to {paper_dir}/")
-print("  figure1_distribution.png/pdf  — already generated (Qwen2-7B)")
-print("  figure2_wikitext2.png/pdf     — WikiText-2 bar chart")
-print("  figure3_ablation.png/pdf      — ablation (orthogonal composition)")
-print("  figure4_outlier_sweep.png/pdf — outlier ratio + 12-model sweep")
-print("  figure5_anomaly.png/pdf       — INT3>INT4 anomaly")
+print("  figure1_distribution.png/pdf  -- already generated (Qwen2-7B)")
+print("  figure2_wikitext2.png/pdf     -- WikiText-2 bar chart")
+print("  figure3_ablation.png/pdf      -- ablation (orthogonal composition)")
+print("  figure4_outlier_sweep.png/pdf -- outlier ratio + 12-model sweep")
+print("  figure5_anomaly.png/pdf       -- INT3>INT4 anomaly")

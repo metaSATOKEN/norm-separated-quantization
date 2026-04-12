@@ -2,31 +2,31 @@
 """
 Phase 1: Single-Layer Compression Tolerance (Arc-Compression v2.0)
 
-各層に forward hook で compress → decompress を挿入し、
-どの層がどの程度の圧縮に耐えるか測定する。
+Insert a compress -> decompress forward hook into each layer
+and measure how much compression each layer can tolerate.
 
-比較条件:
-  - baseline:         圧縮なし
-  - norm_only:        norm のみ保持 (k=0)
+Comparison conditions:
+  - baseline:         no compression
+  - norm_only:        preserve norm only (k=0)
   - norm_pca_k:       norm + PCA top-k
   - norm_random_k:    norm + random top-k (baseline comparison)
 
-k 候補: 2, 4, 8, 16, 32, 64
+k candidates: 2, 4, 8, 16, 32, 64
 
-評価指標:
-  - ΔPPL (perplexity change)
+Evaluation metrics:
+  - DPPL (perplexity change)
   - logits KL divergence
   - top-5 token overlap
   - hidden-state cosine drift
   - reconstruction MSE
 
-GO条件:
-  - 中間層の一部で、小さい k でも ΔPPL が許容範囲
-  - PCA が random より明確に優位
+GO conditions:
+  - For some mid-layers, even small k yields tolerable DPPL
+  - PCA is clearly superior to random
 
-NO-GO条件:
-  - 全層で大きく劣化
-  - PCA と random が同等
+NO-GO conditions:
+  - Severe degradation across all layers
+  - PCA and random perform equally
 """
 
 import sys
@@ -470,12 +470,12 @@ def run_phase1(model_cfg: dict) -> dict:
 
 def evaluate_gates(results: dict) -> dict:
     """
-    Gate 2: 層耐性 — 圧縮しても持つ層はあるか
-    Gate 3: 構造優位 — PCA residual は random より強いか
+    Gate 2: Layer Tolerance -- are there layers that survive compression?
+    Gate 3: Structural Advantage -- is PCA residual stronger than random?
     """
     n_layers = results["n_layers"]
 
-    # Gate 2: Any mid layer with ΔPPL < 1.0 at k=8?
+    # Gate 2: Any mid layer with DPPL < 1.0 at k=8?
     tolerant_layers = []
     for layer_data in results["layers"]:
         li = layer_data["layer"]
@@ -494,7 +494,7 @@ def evaluate_gates(results: dict) -> dict:
 
     gate2_pass = len(tolerant_layers) > 0
 
-    # Gate 3: PCA < random in ΔPPL for majority of (layer, k) pairs?
+    # Gate 3: PCA < random in DPPL for majority of (layer, k) pairs?
     pca_wins = 0
     random_wins = 0
     ties = 0
@@ -538,14 +538,14 @@ def evaluate_gates(results: dict) -> dict:
         "gate2": {
             "gate": "Gate 2: Layer Tolerance",
             "decision": "GO" if gate2_pass else "NO-GO",
-            "question": "圧縮しても持つ層はあるか (ΔPPL < 1.0 at k=8)",
+            "question": "Are there layers that survive compression? (DPPL < 1.0 at k=8)",
             "tolerant_mid_layers": tolerant_layers,
             "n_tolerant": len(tolerant_layers),
         },
         "gate3": {
             "gate": "Gate 3: Structural Advantage",
             "decision": "GO" if gate3_pass else "NO-GO",
-            "question": "PCA residual は random より強いか",
+            "question": "Is PCA residual stronger than random?",
             "pca_wins": pca_wins,
             "random_wins": random_wins,
             "ties": ties,

@@ -1,22 +1,23 @@
 # ============================================================
 # Phase 5b: Qwen2-7B INT3 > INT4 Anomaly Investigation
 # ============================================================
-# Qwen2-7B で INT3 (ΔPPL=+6.6) が INT4 (ΔPPL=+238) より遥かに良い。
-# これは物理的にありえない（ビット数が少ない方が良い）ので原因を突き止める。
+# Qwen2-7B shows INT3 (DPPL=+6.6) far better than INT4 (DPPL=+238).
+# This is physically impossible (fewer bits should not be better),
+# so we investigate the root cause.
 #
-# 仮説:
-#   H1: absmax 量子化の clipping が INT4 で悪さしてる
-#       (qmax=7 vs qmax=3 の離散化粒度の問題)
-#   H2: Qwen2 の KV cache に外れ値チャネルがあり、INT4 の方が感度が高い
-#   H3: GQA の少 KV heads (4) で特定 head が壊れてる
-#   H4: head_dim=128 での量子化の非自明な挙動
-#   H5: 実装バグ（INT3/INT4 の計算ミス）
+# Hypotheses:
+#   H1: absmax quantization clipping is harming INT4
+#       (discretization granularity issue with qmax=7 vs qmax=3)
+#   H2: Qwen2 KV cache has outlier channels, and INT4 is more sensitive
+#   H3: With GQA's few KV heads (4), specific heads are breaking
+#   H4: Non-trivial quantization behavior at head_dim=128
+#   H5: Implementation bug (miscalculation in INT3/INT4)
 #
-# 検証:
-#   Part A: 量子化関数の正当性確認（bit sweep, reconstruction MSE）
-#   Part B: KV cache の値分布・外れ値解析
-#   Part C: per-head / per-layer の壊れ方特定
-#   Part D: 対照実験（Pythia-6.9B で同じことが起きないか確認）
+# Verification:
+#   Part A: Quantization function correctness check (bit sweep, reconstruction MSE)
+#   Part B: KV cache value distribution / outlier analysis
+#   Part C: Identify which head/layer breaks
+#   Part D: Control experiment (check if Pythia-6.9B shows the same issue)
 # ============================================================
 
 # === CELL 1: Setup ===
@@ -78,7 +79,7 @@ TEXT = (
 )
 
 # ════════════════════════════════════════════════════════════════════════════
-# Part A: 量子化関数の正当性確認
+# Part A: Quantization function correctness check
 # ════════════════════════════════════════════════════════════════════════════
 print("="*60)
 print("Part A: Quantization Sanity Check")
@@ -100,7 +101,7 @@ print("\n  Expected: MSE and cosine should monotonically improve with more bits"
 print("  If INT3 < INT4 in MSE, something is wrong with qa()")
 
 # ════════════════════════════════════════════════════════════════════════════
-# Part B: Qwen2-7B KV cache 値分布解析
+# Part B: Qwen2-7B KV cache value distribution analysis
 # ════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Part B: Qwen2-7B KV Cache Distribution")
@@ -165,7 +166,7 @@ for li in range(n_layers(past)):
               f"{absmax_k:>8.3f} {absmax_k/(std_k+1e-12):>10.1f} {outlier_pct:>7.2f}%")
 
 # ════════════════════════════════════════════════════════════════════════════
-# Part C: Per-head quantization error — which head breaks at INT4?
+# Part C: Per-head quantization error -- which head breaks at INT4?
 # ════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Part C: Per-Head Quantization Error (Qwen2-7B)")
@@ -186,12 +187,12 @@ for h in range(nh):
     cos3 = F.cosine_similarity(kh, k_q3, dim=-1).mean().item()
     absmax = kh.abs().amax(dim=-1).mean().item()
 
-    flag = " ← INT3 better MSE!" if mse3 < mse4 else ""
+    flag = " <- INT3 better MSE!" if mse3 < mse4 else ""
     print(f"  Head {h}: INT4 MSE={mse4:.6f} cos={cos4:.4f}  |  "
           f"INT3 MSE={mse3:.6f} cos={cos3:.4f}  |  absmax={absmax:.3f}{flag}")
 
 # ════════════════════════════════════════════════════════════════════════════
-# Part D: ΔPPL per layer — which layer causes the explosion?
+# Part D: DPPL per layer -- which layer causes the explosion?
 # ════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Part D: Per-Layer ΔPPL Contribution (INT4 vs INT3)")
@@ -232,16 +233,16 @@ for li in sample_layers:
     ratio = results_layer["int4"] / results_layer["int3"] if results_layer["int3"] != 0 else float("inf")
     flag = ""
     if results_layer["int4"] > 10 and ratio > 5:
-        flag = " ← INT4 EXPLOSION"
+        flag = " <- INT4 EXPLOSION"
     elif results_layer["int3"] < results_layer["int4"] * 0.5:
-        flag = " ← INT3 much better"
+        flag = " <- INT3 much better"
 
     print(f"  L{li:>3}  {results_layer['int4']:>+12.4f} {results_layer['int3']:>+12.4f} "
           f"{ratio:>10.2f}x{flag}")
     per_layer_dppl.append({"layer": li, **results_layer, "ratio": round(ratio, 3)})
 
 # ════════════════════════════════════════════════════════════════════════════
-# Part E: Pythia-6.9B control — does the same anomaly occur?
+# Part E: Pythia-6.9B control -- does the same anomaly occur?
 # ════════════════════════════════════════════════════════════════════════════
 print("\n" + "="*60)
 print("Part E: Pythia-6.9B Control (same test)")
@@ -300,21 +301,21 @@ print("="*60)
 print("""
 Check the following:
 1. Part A: Does synthetic MSE monotonically decrease with more bits?
-   YES → qa() is correct, problem is data-specific
-   NO  → qa() has a bug
+   YES -> qa() is correct, problem is data-specific
+   NO  -> qa() has a bug
 
 2. Part B: Are there outlier channels in Qwen2 KV cache?
-   outlier% > 1% → outlier channels dominate INT4 error
+   outlier% > 1% -> outlier channels dominate INT4 error
 
 3. Part C: Does any single head show INT3 < INT4 in MSE?
-   This would be physically impossible → likely a rounding artifact
+   This would be physically impossible -> likely a rounding artifact
 
 4. Part D: Which layer causes INT4 explosion?
-   If concentrated in few layers → layer-specific outlier problem
+   If concentrated in few layers -> layer-specific outlier problem
 
-5. Part E: Does Pythia show monotonic bit→ΔPPL?
-   YES → problem is Qwen-specific (GQA/RMSNorm/outlier)
-   NO  → problem is general to head_dim=128
+5. Part E: Does Pythia show monotonic bit->DPPL?
+   YES -> problem is Qwen-specific (GQA/RMSNorm/outlier)
+   NO  -> problem is general to head_dim=128
 """)
 
 # JSON output

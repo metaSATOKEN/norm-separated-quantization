@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Phase 6: Figure 1 (Distribution Histogram) + WikiText-2 PPL
-ローカル M1 版。GPT-2 のみ。
+Local M1 version. GPT-2 only.
 """
 
 import gc, json, sys, numpy as np, torch, torch.nn.functional as F
@@ -62,7 +62,7 @@ def compress_cache(past, method_name):
 # PART A: Figure 1
 # ════════════════════════════════════════════════════════════════════════════
 print("=" * 60)
-print("PART A: Figure 1 — KV Vector Distribution (GPT-2)")
+print("PART A: Figure 1 -- KV Vector Distribution (GPT-2)")
 print("=" * 60)
 
 tok = GPT2Tokenizer.from_pretrained("gpt2")
@@ -109,7 +109,7 @@ fig, axes = plt.subplots(2, 2, figsize=(12, 8))
 
 ax = axes[0, 0]
 ax.hist(k0_vals, bins=200, color='#e74c3c', alpha=0.7, edgecolor='none', density=True)
-ax.set_title('(a) Layer 0 Key — Raw Values')
+ax.set_title('(a) Layer 0 Key -- Raw Values')
 ax.set_xlabel('Value'); ax.set_ylabel('Density')
 rng = max(abs(k0_vals.min()), abs(k0_vals.max())) * 1.1
 ax.set_xlim(-rng, rng)
@@ -119,7 +119,7 @@ ax.annotate(f'range: [{k0_vals.min():.1f}, {k0_vals.max():.1f}]\nstd: {k0_vals.s
 
 ax = axes[0, 1]
 ax.hist(dirs0, bins=200, color='#2ecc71', alpha=0.7, edgecolor='none', density=True)
-ax.set_title('(b) Layer 0 Key — After Norm Separation')
+ax.set_title('(b) Layer 0 Key -- After Norm Separation')
 ax.set_xlabel('Value'); ax.set_ylabel('Density')
 ax.set_xlim(-0.5, 0.5)
 ax.annotate(f'range: [{dirs0.min():.3f}, {dirs0.max():.3f}]\nstd: {dirs0.std():.4f}',
@@ -128,7 +128,7 @@ ax.annotate(f'range: [{dirs0.min():.3f}, {dirs0.max():.3f}]\nstd: {dirs0.std():.
 
 ax = axes[1, 0]
 ax.hist(k_mid_vals, bins=200, color='#3498db', alpha=0.7, edgecolor='none', density=True)
-ax.set_title(f'(c) Layer {mid} Key — Raw Values')
+ax.set_title(f'(c) Layer {mid} Key -- Raw Values')
 ax.set_xlabel('Value'); ax.set_ylabel('Density')
 rng2 = max(abs(k_mid_vals.min()), abs(k_mid_vals.max())) * 1.1
 ax.set_xlim(-rng2, rng2)
@@ -138,7 +138,7 @@ ax.annotate(f'range: [{k_mid_vals.min():.1f}, {k_mid_vals.max():.1f}]\nstd: {k_m
 
 ax = axes[1, 1]
 ax.hist(dirs_mid, bins=200, color='#2ecc71', alpha=0.7, edgecolor='none', density=True)
-ax.set_title(f'(d) Layer {mid} Key — After Norm Separation')
+ax.set_title(f'(d) Layer {mid} Key -- After Norm Separation')
 ax.set_xlabel('Value'); ax.set_ylabel('Density')
 ax.set_xlim(-0.5, 0.5)
 ax.annotate(f'range: [{dirs_mid.min():.3f}, {dirs_mid.max():.3f}]\nstd: {dirs_mid.std():.4f}',

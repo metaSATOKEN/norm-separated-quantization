@@ -2,17 +2,17 @@
 """
 Phase 4: KV Cache Compression (Arc-Compression v2.0)
 
-Hidden state 全置換は不可能と判明（Phase 1-2）。
-KV cache に焦点を絞り、推論時メモリ削減の可能性を検証する。
+Full hidden state replacement proved infeasible (Phase 1-2).
+Focus on KV cache to explore the possibility of inference-time memory reduction.
 
-圧縮手法:
-  1. per-head PCA: 各 head の K/V を独立に低ランク近似
-  2. norm_pca: norm 分離してから低ランク（Arc知見の活用）
-  3. random: 同次元の random projection（baseline）
+Compression methods:
+  1. per-head PCA: low-rank approximation of K/V independently per head
+  2. norm_pca: norm separation followed by low-rank approximation (leveraging Arc findings)
+  3. random: random projection of the same dimensionality (baseline)
 
-Gate 5 条件:
-  - 実メモリ削減 > 3x with ΔPPL < 1.0
-  - PCA が random より優位
+Gate 5 conditions:
+  - Actual memory reduction > 3x with DPPL < 1.0
+  - PCA is superior to random
 """
 
 import sys
@@ -186,7 +186,7 @@ def evaluate(model, prefill_ids, continuation_ids,
              compress_layers: list[int] | None = None) -> dict:
     """
     1. Baseline: full forward on prefill + continuation
-    2. Compressed: prefill → compress KV → continue
+    2. Compressed: prefill -> compress KV -> continue
     """
     full_ids = torch.cat([prefill_ids, continuation_ids], dim=1)
     pf_len = prefill_ids.shape[1]
@@ -242,7 +242,7 @@ def evaluate(model, prefill_ids, continuation_ids,
 # ── Gate 5 ──────────────────────────────────────────────────────────────────
 
 def evaluate_gate5(all_results, selective_results):
-    # Viable: ≥3x per-head compression with |ΔPPL| < 1.0
+    # Viable: >=3x per-head compression with |DPPL| < 1.0
     viable = []
     for r in all_results:
         if r["method"] == "pca" and r["per_head_compression"] >= 3 and abs(r["delta_ppl"]) < 1.0:
