@@ -440,7 +440,7 @@ Our norm separation is complementary to existing KV cache compression techniques
   \item \textbf{Short-context evaluation}: Our primary evaluation uses sequences under 250 tokens. WikiText-2 evaluation on 7 models confirms the pattern on a standard benchmark (\S\ref{tab:wikitext}), but longer-context evaluation (1k--4k tokens) across all models would further strengthen the results.
   \item \textbf{No end-to-end benchmarks}: We measure $\Delta$PPL but not inference throughput, latency, or peak memory in production settings.
   \item \textbf{No comparison with KIVI/Gear}: Direct comparison with state-of-the-art KV compression methods would clarify the relative and additive value of norm separation.
-  \item \textbf{Post-LN untested}: GPT-1 (Post-LN) was excluded because it does not expose a KV cache through standard APIs. The norm-dominant geometry is weaker in Post-LN models, so benefits may be smaller.
+  \item \textbf{Post-LN limited}: GPT-1 (Post-LN) does not expose a KV cache through standard APIs, preventing direct evaluation. A distributional analysis (Appendix~\ref{sec:postln}) confirms that Post-LN KV vectors exhibit weaker norm dominance ($|r|=0.74$ vs $0.99$), suggesting reduced but non-zero benefit from norm separation.
 \end{enumerate}
 
 %% ============================================================
@@ -542,6 +542,28 @@ Seq.\ length & FP16 KV & nsep+INT4 & Overhead & Ratio \\
 Measured on 1024 tokens: FP16 KV cache = 640\,MB, nsep+INT4 = 164\,MB (3.9$\times$ reduction). The norm storage overhead is 4.2\,MB ($<$~1\% of FP16 cache).
 
 \textbf{Latency}: Prefill 512 tokens + decode 40 tokens: baseline 0.72\,s, nsep+pchan4 0.87\,s (+21\% overhead). This overhead arises from our unoptimized Python implementation (per-head loop with explicit norm computation). A fused CUDA kernel performing norm separation and per-channel quantization in a single pass would reduce this overhead to near-zero, as the arithmetic intensity (one L2 norm + one division per vector) is negligible compared to attention computation.
+
+\section{Post-LN Distributional Analysis}
+\label{sec:postln}
+
+Our method relies on the norm-dominant geometry of Pre-LN KV vectors: token-wise norm variation inflates the dynamic range that quantization must capture. To assess whether this premise holds for Post-LN architectures, we compare KV cache distributions under Pre-LN and simulated Post-LN conditions (per-channel standardization to zero mean and unit variance) on GPT-2's mid-layer Key vectors.
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccc}
+\toprule
+Condition & PC1 variance & $|r(\text{PC1}, \text{norm})|$ & Norm std \\
+\midrule
+Pre-LN (raw) & 56.3\% & 0.992 & 4.52 \\
+Post-LN (simulated) & 28.0\% & 0.744 & 1.64 \\
+\bottomrule
+\end{tabular}
+\caption{KV cache distribution under Pre-LN vs simulated Post-LN. Post-LN shows substantially weaker norm dominance: PC1 variance drops from 56\% to 28\%, and PC1-norm correlation from 0.99 to 0.74.}
+\label{tab:postln}
+\end{table}
+
+Under Post-LN conditions, norm dominance is substantially weakened: PC1 variance drops from 56\% to 28\%, and the PC1-norm correlation from 0.99 to 0.74. The norm standard deviation decreases from 4.52 to 1.64, indicating 2.8$\times$ less token-wise norm variation. Since norm separation specifically addresses this variation, we expect reduced (but non-zero) benefit on Post-LN models. Direct evaluation was not possible because GPT-1 (the only Post-LN model in our test suite) does not expose a KV cache through standard HuggingFace APIs.
 
 %% ============================================================
 \begin{thebibliography}{30}
