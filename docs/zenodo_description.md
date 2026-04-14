@@ -52,6 +52,10 @@ KV cache compression, quantization, large language models, INT4, activation outl
 
 Apache License 2.0
 
+## DOI
+
+10.5281/zenodo.19563193
+
 ## Related Identifiers
 
 - GitHub repository: https://github.com/metaSATOKEN/norm-separated-quantization
