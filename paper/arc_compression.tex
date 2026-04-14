@@ -264,6 +264,8 @@ perchan4 & & per-ch scale & +97.8 & 2.4$\times$ \\
 
 \subsection{Complete Model Sweep: 12 Models, 124M to 40B}
 
+We evaluate nsep+pchan4 across all 12 Pre-LN models from the Arc paper test suite \citep{sato2026arc}, spanning 4 architecture families (GPT, Pythia, OPT, Qwen/Mistral, Falcon), both MHA and GQA attention, and three orders of magnitude in parameter count (Table~\ref{tab:sweep}).
+
 \begin{table}[t]
 \centering
 \small
@@ -296,6 +298,8 @@ OPT-125m & 125M & 64 & MHA & +1.22 & +1.46 & 1$\times$ \\
 \textbf{Negative $\Delta$PPL}: Pythia-2.8B shows $\Delta$PPL~=~$-$0.06 on curated text, nominally below the uncompressed baseline. However, given the per-chunk variance in our evaluation (5 chunks), this value is likely within measurement noise and should not be interpreted as a genuine improvement.
 
 \textbf{Model-family patterns}: OPT models consistently show the smallest benefit (outlier ratios 1.4--3.1$\times$, among the lowest). Pythia models benefit most strongly. Qwen models show the largest \emph{potential} improvement when outliers are severe (Qwen2-7B) but no benefit when they are mild (Qwen2.5-14B).
+
+\textbf{GQA compatibility}: Three GQA models are included (Qwen2-0.5B, Qwen2-7B, Qwen2.5-14B, Mistral-7B), where each KV head serves multiple query heads. Norm separation remains effective in this setting---Qwen2-7B's 744$\times$ improvement is the largest in the entire sweep. The shared KV structure does not diminish the benefit because norm variation and outlier channels affect KV vectors regardless of how many query heads attend to them.
 
 \subsection{Generation Quality}
 
@@ -342,7 +346,7 @@ Pythia-12B & 12B & 12.9 & +34.22 & +4.01 & \textbf{8.5$\times$} \\
 Qwen2.5-14B & 14B & 9.6 & +0.55 & +0.45 & 1.2$\times$ \\
 \bottomrule
 \end{tabular}
-\caption{WikiText-2 evaluation across 8 models (124M to 14B). nsep+pchan achieves up to 1885$\times$ improvement on Qwen2-7B, with the largest gains precisely where naive INT4 fails most severely. Pythia-410M ($d_h$=64) is the only model where nsep+pchan4 leaves significant residual error (+23.5), likely due to the small head dimension limiting per-channel quantization benefit.}
+\caption{WikiText-2 evaluation across 8 models (124M to 14B). nsep+pchan achieves up to 1885$\times$ improvement on Qwen2-7B, with the largest gains precisely where naive INT4 fails most severely. Pythia-410M ($d_h$=64) is the only model where nsep+pchan4 leaves significant residual error (+23.5): with only 64 dimensions, per-channel scale estimation has higher variance and the quantization grid is too coarse relative to the signal complexity.}
 \label{tab:wikitext}
 \end{table}
 
@@ -434,7 +438,7 @@ Our norm separation is complementary to existing KV cache compression techniques
 \subsection{Limitations}
 
 \begin{enumerate}[nosep]
-  \item \textbf{Short-context evaluation}: Our primary evaluation uses sequences under 250 tokens. WikiText-2 evaluation on 7 models confirms the pattern on a standard benchmark (\S\ref{tab:wikitext}), but longer-context evaluation (1k--4k tokens) across all models would further strengthen the results.
+  \item \textbf{Context length coverage}: Our curated-text evaluation uses sequences under 250 tokens, supplemented by WikiText-2 evaluation on 8 models and long-context evaluation up to 4096 tokens on 3 models (Section~5.6). Full long-context evaluation across all 12 models would further strengthen the results.
   \item \textbf{No end-to-end benchmarks}: We measure $\Delta$PPL but not inference throughput, latency, or peak memory in production settings.
   \item \textbf{No comparison with KIVI/Gear}: Direct comparison with state-of-the-art KV compression methods would clarify the relative and additive value of norm separation.
   \item \textbf{Post-LN limited}: GPT-1 (Post-LN) does not expose a KV cache through standard APIs, preventing direct evaluation. A distributional analysis (Appendix~\ref{sec:postln}) confirms that Post-LN KV vectors exhibit weaker norm dominance ($|r|=0.74$ vs $0.99$), suggesting reduced but non-zero benefit from norm separation.
