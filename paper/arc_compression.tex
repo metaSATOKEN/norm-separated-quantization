@@ -333,6 +333,7 @@ We evaluate on WikiText-2 \citep{merity2017pointer} to confirm that results tran
 Model & Params & Base PPL & naive4 $\Delta$PPL & nsep+pchan $\Delta$PPL & Improv. \\
 \midrule
 GPT-2 & 124M & 70.4 & +1.60 & +1.13 & 1.4$\times$ \\
+Pythia-410M & 410M & 30.0 & +171.13 & +23.46 & \textbf{7.3$\times$} \\
 Pythia-2.8B & 2.8B & 16.2 & +14.74 & +1.99 & \textbf{7.4$\times$} \\
 Pythia-6.9B & 6.9B & 14.1 & +22.56 & +1.21 & \textbf{18.7$\times$} \\
 Mistral-7B & 7B & 5.2 & +0.10 & +0.04 & 2.6$\times$ \\
@@ -341,7 +342,7 @@ Pythia-12B & 12B & 12.9 & +34.22 & +4.01 & \textbf{8.5$\times$} \\
 Qwen2.5-14B & 14B & 9.6 & +0.55 & +0.45 & 1.2$\times$ \\
 \bottomrule
 \end{tabular}
-\caption{WikiText-2 evaluation across 7 models (124M to 14B). nsep+pchan achieves up to 1885$\times$ improvement on Qwen2-7B, with the largest gains precisely where naive INT4 fails most severely.}
+\caption{WikiText-2 evaluation across 8 models (124M to 14B). nsep+pchan achieves up to 1885$\times$ improvement on Qwen2-7B, with the largest gains precisely where naive INT4 fails most severely. Pythia-410M ($d_h$=64) is the only model where nsep+pchan4 leaves significant residual error (+23.5), likely due to the small head dimension limiting per-channel quantization benefit.}
 \label{tab:wikitext}
 \end{table}
 
@@ -386,7 +387,7 @@ On Mistral-7B (where naive INT4 already works), nsep+pchan4 performs identically
 \begin{figure}[t]
   \centering
   \includegraphics[width=\textwidth]{figure2_wikitext2.pdf}
-  \caption{WikiText-2 evaluation across 7 models (124M to 14B). (a)~$\Delta$PPL comparison on log scale: naive INT4 (red) fails catastrophically on Pythia and Qwen2-7B, while nsep+pchan (green) keeps $\Delta$PPL below~+4.0 across all models. (b)~Improvement factor: nsep+pchan provides up to 1885$\times$ improvement on Qwen2-7B, with the largest gains precisely where naive INT4 fails most severely.}
+  \caption{WikiText-2 evaluation across 8 models (124M to 14B). (a)~$\Delta$PPL comparison on log scale: naive INT4 (red) fails catastrophically on Pythia and Qwen2-7B, while nsep+pchan (green) keeps $\Delta$PPL low across most models. (b)~Improvement factor: nsep+pchan provides up to 1885$\times$ improvement on Qwen2-7B. Note: Pythia-410M ($d_h$=64) retains +23.5 residual error even with nsep+pchan, likely due to small head dimension.}
   \label{fig:wikitext}
 \end{figure}
 

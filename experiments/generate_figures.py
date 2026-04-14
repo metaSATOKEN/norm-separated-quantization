@@ -46,9 +46,9 @@ C_COMBO = '#9b59b6'
 # ════════════════════════════════════════════════════════════════════════════
 print("Figure 2: WikiText-2 ΔPPL comparison...")
 
-models = ["GPT-2\n(124M)", "Pythia\n2.8B", "Pythia\n6.9B", "Mistral\n7B", "Qwen2\n7B", "Pythia\n12B", "Qwen2.5\n14B"]
-naive4 = [1.60, 14.74, 22.56, 0.10, 811.61, 34.22, 0.55]
-nsep_pc = [1.13, 1.99, 1.21, 0.04, 0.43, 4.01, 0.45]
+models = ["GPT-2\n(124M)", "Pythia\n410M", "Pythia\n2.8B", "Pythia\n6.9B", "Mistral\n7B", "Qwen2\n7B", "Pythia\n12B", "Qwen2.5\n14B"]
+naive4 = [1.60, 171.13, 14.74, 22.56, 0.10, 811.61, 34.22, 0.55]
+nsep_pc = [1.13, 23.46, 1.99, 1.21, 0.04, 0.43, 4.01, 0.45]
 
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(14, 4.5), gridspec_kw={'width_ratios': [3, 2]})
 
