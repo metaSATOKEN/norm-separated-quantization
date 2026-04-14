@@ -91,7 +91,7 @@ The scale $s$ is typically computed per-row (one per token) or per-channel (one 
 
 \subsection{A Less-Known Factor: Norm Variation}
 
-We identify an additional, independent source of quantization difficulty: \textbf{token-wise norm variation}. In Pre-LN Transformers, hidden-state norms vary significantly across tokens---the L2 norm of KV vectors can differ by 2--5$\times$ within a single sequence. This is a well-documented geometric property: the first principal component of mid-layer hidden states correlates near-perfectly ($|r| > 0.96$) with the token-wise norm \citep{sato2026arc}.
+We identify an additional, independent source of quantization difficulty: \textbf{token-wise norm variation}. In Pre-LN Transformers, hidden-state norms vary significantly across tokens---the L2 norm of KV vectors can differ by 2--5$\times$ within a single sequence. We confirm this directly in Figure~\ref{fig:distribution}: Qwen2-7B Layer~0 key vectors show norm standard deviation of 4.52 across tokens. This norm-dominant geometry has also been characterized in a related geometric analysis of Pre-LN hidden states \citep{sato2026arc}.
 
 Under per-row absmax quantization, each token's KV vector is quantized with its own scale $s_t = \max|\mathbf{x}_t| / (2^{b-1}-1)$. High-norm tokens get coarse scales, low-norm tokens get fine scales---the quantization precision is inconsistent across the sequence. More importantly, the \textbf{direction} information (which determines attention patterns) is entangled with the \textbf{magnitude} information (which scales the output), so errors in one corrupt the other.
 
@@ -121,10 +121,9 @@ For each KV cache vector $\mathbf{x} \in \mathbb{R}^{d_h}$ at each head, token, 
   \item $\mathbf{x}_q \leftarrow n \cdot \hat{\mathbf{x}}_q$ --- reconstruct
 \end{enumerate}
 
-The entire method adds only 4 lines to an existing quantization pipeline. Figure~\ref{lst:code} shows a complete PyTorch implementation.
+The entire method adds only 4 lines to an existing quantization pipeline. Listing~\ref{lst:code} shows a complete PyTorch implementation.
 
-\begin{figure}[h]
-\begin{lstlisting}
+\begin{lstlisting}[caption={Complete nsep+pchan4 implementation in PyTorch. The method adds 4 lines (norm separation and re-normalization) to standard per-channel INT4 quantization. No training or calibration required.},label={lst:code},float=h]
 def nsep_pchan_int4(x):
     """Norm-separated per-channel INT4 quantization.
     x: (seq_len, head_dim) -- one KV cache head."""
@@ -140,9 +139,6 @@ def nsep_pchan_int4(x):
     direction_q = direction_q / direction_q.norm(dim=-1, keepdim=True)
     return norm * direction_q
 \end{lstlisting}
-\caption{Complete nsep+pchan4 implementation in PyTorch. The method adds 4 lines (norm separation and re-normalization) to standard per-channel INT4 quantization. No training, calibration, or model-specific tuning is required.}
-\label{lst:code}
-\end{figure}
 
 \subsection{Why It Helps}
 
@@ -199,7 +195,7 @@ Layers 8--27 & $<$ 0.25 each \\
 \end{tabular}
 \end{table}
 
-\textbf{Layer~0 alone} causes nearly all the degradation. Examining the KV cache distribution: Layer~0 absmax~=~166.8 (mean channel absmax: 19.4, outlier ratio: 8.6$\times$), while Layers~4--26 have absmax~9--22 (ratio~$<$~2$\times$). Eight specific channels (indices 61--63, 123--127) contain values 8$\times$ larger than average. Under per-row absmax with $q_{\max}=7$ (INT4), the scale becomes $s=167/7=23.8$, and mid-range values (5--20) are mapped to noisy quantization levels that corrupt attention patterns.
+\textbf{Layer~0 alone} causes nearly all the degradation. We define the \emph{outlier ratio} as $\max_j (\max_t |x_{tj}|) \,/\, \text{mean}_j (\max_t |x_{tj}|)$---the ratio of the largest per-channel maximum to the average per-channel maximum across all $d_h$ dimensions. Layer~0 has absmax~=~166.8 (mean channel absmax: 19.4, outlier ratio: 8.6$\times$), while Layers~4--26 have absmax~9--22 (ratio~$<$~2$\times$). Eight specific channels (indices 61--63, 123--127) contain values 8$\times$ larger than average. Under per-row absmax with $q_{\max}=7$ (INT4), the scale becomes $s=167/7=23.8$, and mid-range values (5--20) are mapped to noisy quantization levels that corrupt attention patterns.
 
 \subsection{Case 2: Pythia-6.9B --- Norm Variation Without Outliers}
 
@@ -297,7 +293,7 @@ OPT-125m & 125M & 64 & MHA & +1.22 & +1.46 & 1$\times$ \\
 
 \textbf{Safety-net property}: nsep+pchan provides large improvements exactly when needed (naive4 $\Delta$PPL~$>$~10 $\to$ 6--744$\times$ improvement) and introduces negligible change when not needed (naive4 $\Delta$PPL~$<$~1 $\to$ within 0.24). It never causes catastrophic degradation.
 
-\textbf{Negative $\Delta$PPL}: Pythia-2.8B achieves $\Delta$PPL~=~$-$0.06, slightly \emph{outperforming} the uncompressed baseline. We attribute this to per-channel quantization acting as a form of mild regularization.
+\textbf{Negative $\Delta$PPL}: Pythia-2.8B shows $\Delta$PPL~=~$-$0.06 on curated text, nominally below the uncompressed baseline. However, given the per-chunk variance in our evaluation (5 chunks), this value is likely within measurement noise and should not be interpreted as a genuine improvement.
 
 \textbf{Model-family patterns}: OPT models consistently show the smallest benefit (outlier ratios 1.4--3.1$\times$, among the lowest). Pythia models benefit most strongly. Qwen models show the largest \emph{potential} improvement when outliers are severe (Qwen2-7B) but no benefit when they are mild (Qwen2.5-14B).
 
