@@ -11,14 +11,17 @@
 Naive INT4 quantization of KV caches fails catastrophically on some models (ΔPPL = +8293 on Qwen2-7B at 4096 tokens). We fix this by separating the L2 norm before quantizing:
 
 ```python
-# Before: naive INT4 (can fail)
-x_q = absmax_quantize(x, bits=4)
+# Before: naive INT4 (can fail catastrophically)
+scale = x.abs().amax(dim=-1, keepdim=True) / 7
+x_q = (x / scale).round().clamp(-7, 7) * scale
 
-# After: norm-separated INT4 (always safe)
+# After: norm-separated per-channel INT4 (always safe)
 norm = x.norm(dim=-1, keepdim=True)
 direction = x / norm
-direction_q = per_channel_absmax_quantize(direction, bits=4)
-x_q = norm * (direction_q / direction_q.norm(dim=-1, keepdim=True))
+scale = direction.abs().amax(dim=0, keepdim=True) / 7  # per-channel
+direction_q = (direction / scale).round().clamp(-7, 7) * scale
+direction_q = direction_q / direction_q.norm(dim=-1, keepdim=True)
+x_q = norm * direction_q
 ```
 
 **Result**: ΔPPL +8293 → +0.19 at 4096 tokens (44,000x improvement). Never hurts models where naive INT4 already works.
