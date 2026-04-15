@@ -4,7 +4,7 @@
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 [![Paper](https://img.shields.io/badge/Paper-PDF-red.svg)](paper/arc_compression.pdf)
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19563193.svg)](https://doi.org/10.5281/zenodo.19563193)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.19590278.svg)](https://doi.org/10.5281/zenodo.19590278)
 
 ## TL;DR
 
@@ -137,8 +137,8 @@ Copy-paste scripts from `experiments/phase5*.py` or `phase7*.py` into Google Col
   title={Norm-Separated Quantization: A Training-Free Fix for KV Cache INT4 Failures},
   author={Sato, Kentaro},
   year={2026},
-  doi={10.5281/zenodo.19563193},
-  url={https://doi.org/10.5281/zenodo.19563193}
+  doi={10.5281/zenodo.19590278},
+  url={https://doi.org/10.5281/zenodo.19590278}
 }
 ```
 
