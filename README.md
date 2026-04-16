@@ -144,7 +144,7 @@ Copy-paste scripts from `experiments/phase5*.py` or `phase7*.py` into Google Col
 
 ## Related Work
 
-This work builds on the geometric observations from [The Arc and Its Thickness](https://github.com/your-repo/arc-paper) (Sato, 2026), which established that Pre-LN Transformer hidden states concentrate on a norm-dominant subspace.
+This work builds on the geometric observations from [The Arc and Its Thickness](https://github.com/metaSATOKEN/manifold_topology_experiment) (Sato, 2026), which established that Pre-LN Transformer hidden states concentrate on a norm-dominant subspace.
 
 ## License
 
