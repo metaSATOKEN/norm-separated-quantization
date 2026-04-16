@@ -602,6 +602,63 @@ Post-LN (simulated) & 28.0\% & 0.744 & 1.64 \\
 
 Under Post-LN conditions, norm dominance is substantially weakened: PC1 variance drops from 56\% to 28\%, and the PC1-norm correlation from 0.99 to 0.74. The norm standard deviation decreases from 4.52 to 1.64, indicating 2.8$\times$ less token-wise norm variation. Since norm separation specifically addresses this variation, we expect reduced (but non-zero) benefit on Post-LN models. Direct evaluation was not possible because GPT-1 (the only Post-LN model in our test suite) does not expose a KV cache through standard HuggingFace APIs.
 
+\section{Needle-in-Haystack: Factual Retrieval Under Quantization}
+\label{sec:niah}
+
+To evaluate whether $\Delta$PPL improvements translate to practical factual retrieval, we conduct Needle-in-Haystack (NIAH) experiments. Secret facts (``needles'') are embedded at various positions within filler text (``haystack''), and the model is asked to recall them after KV cache compression.
+
+\subsection{Single-Needle Retrieval}
+
+We embed one fact (``The secret code is: BLUE ELEPHANT 7742'') in haystacks of 5--50 paragraphs (185--1413 tokens) at 5 positions (0\%--100\%), testing 3 models:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Model & Outlier & $\Delta$PPL & baseline & naive4 & nsep+pchan4 \\
+\midrule
+Qwen2-7B & 8.6$\times$ & +238 & 15/15 & \textbf{0/15} & \textbf{15/15} \\
+Pythia-6.9B & 4.6$\times$ & +22 & 15/15 & 15/15 & 15/15 \\
+Mistral-7B & 3.1$\times$ & +0.1 & 15/15 & 15/15 & 15/15 \\
+\bottomrule
+\end{tabular}
+\caption{Single-needle retrieval. Only Qwen2-7B (outlier ratio 8.6$\times$) loses all needles under naive INT4. Pythia-6.9B retains all needles despite $\Delta$PPL~=~+22, even at 1413 tokens. nsep+pchan4 achieves 15/15 on all models.}
+\label{tab:niah_single}
+\end{table}
+
+Qwen2-7B loses \emph{all} needles under naive INT4, producing degenerate output (``The the the the...''). Pythia-6.9B retains all needles even at 1413 tokens despite $\Delta$PPL~=~+22---moderate PPL degradation does not destroy factual recall. nsep+pchan4 achieves perfect retrieval on all models.
+
+\subsection{Multi-Needle Retrieval}
+
+We extend to 3--5 needles scattered across haystacks of 280--2459 tokens, testing 5 models:
+
+\begin{table}[h]
+\centering
+\small
+\begin{tabular}{lccccc}
+\toprule
+Model & Outlier & baseline & naive4 & nsep+pchan4 & Note \\
+\midrule
+Qwen2-7B & 8.6$\times$ & 26/26 & \textbf{0/26} & \textbf{26/26} & Full recovery \\
+Qwen2.5-14B & 3.5$\times$ & 26/26 & 26/26 & 26/26 & Low outlier, no issue \\
+Mistral-7B & 3.1$\times$ & 7/26 & 8/26 & 5/26 & Baseline unstable \\
+Pythia-12B & 4.6$\times$ & 0/21 & 0/21 & 3/21 & Cannot do multi-QA \\
+Pythia-6.9B & 4.6$\times$ & 0/21 & 0/21 & 0/21 & Cannot do multi-QA \\
+\bottomrule
+\end{tabular}
+\caption{Multi-needle retrieval across 5 models. Qwen2-7B (outlier 8.6$\times$) is the only model where naive4 causes complete needle loss. Qwen2.5-14B (outlier 3.5$\times$) passes all needles even with naive4. Pythia models cannot perform multi-needle QA at baseline (no instruction tuning).}
+\label{tab:niah_multi}
+\end{table}
+
+\textbf{Key findings:}
+\begin{itemize}[nosep]
+  \item Needle retrieval failure requires \emph{both} high outlier ratio ($>$8$\times$) and sufficient model instruction-following capability. Only Qwen2-7B meets both conditions.
+  \item Qwen2.5-14B (outlier 3.5$\times$) achieves 26/26 with naive4---confirming that the outlier ratio, not model size, determines quantization vulnerability.
+  \item Pythia models (base, no instruction tuning) cannot perform multi-needle QA even at FP16 baseline, making quantization impact unmeasurable with this protocol.
+  \item PPL improvement remains the broader, model-general contribution of nsep+pchan4. NIAH rescue is specific to catastrophic failure cases (outlier ratio $>$8$\times$).
+\end{itemize}
+
 %% ============================================================
 \begin{thebibliography}{30}
 
