@@ -38,7 +38,7 @@
 \maketitle
 
 \begin{abstract}
-INT4 quantization of KV caches is a standard technique for reducing the memory footprint of large language model inference, but it can fail catastrophically on certain models---we observe $\Delta$PPL as high as +238 on Qwen2-7B under naive absmax quantization. We trace the root cause to two independent factors: (1)~large token-wise norm variation in KV vectors, which forces the quantization scale to accommodate extreme dynamic ranges, and (2)~activation outlier channels that corrupt the quantization scale for normal channels. We propose \textbf{norm-separated quantization}---a simple preprocessing step that decomposes each KV vector into its L2 norm (stored at full precision) and unit direction (quantized). Combined with per-channel scaling, this method (nsep+pchan) reduces the Qwen2-7B failure from $\Delta$PPL~+812 to~+0.43 on WikiText-2 (1885$\times$ improvement), with the gap widening at longer contexts: at 4096 tokens, naive INT4 degrades to $\Delta$PPL~+8293 while nsep+pchan remains at~+0.19 (44{,}000$\times$). The method never degrades models where naive INT4 already works. Across 12 Pre-LN models from 124M to 40B parameters spanning 4 architecture families, nsep+pchan achieves $\Delta$PPL~$<$~2.0 at INT4 with no training, no calibration data, and negligible computational overhead. We validate that real INT4 packing (packed \texttt{uint8}, 2 values per byte) produces identical quality to simulated quantization ($\Delta$PPL difference~$<$~0.005) while achieving 3.4--3.7$\times$ actual memory reduction. Code and results are available at \url{https://github.com/metaSATOKEN/norm-separated-quantization}.
+INT4 quantization of KV caches is a standard technique for reducing the memory footprint of large language model inference, but it can fail catastrophically on certain models---we observe $\Delta$PPL as high as +238 on Qwen2-7B under naive absmax quantization. We trace the root cause to two independent factors: (1)~large token-wise norm variation in KV vectors, which forces the quantization scale to accommodate extreme dynamic ranges, and (2)~activation outlier channels that corrupt the quantization scale for normal channels. We propose \textbf{norm-separated quantization}---a simple preprocessing step that decomposes each KV vector into its L2 norm (stored at full precision) and unit direction (quantized). Combined with per-channel scaling, this method (nsep+pchan) reduces the Qwen2-7B failure from $\Delta$PPL~+812 to~+0.43 on WikiText-2 (1885$\times$ improvement), with the gap widening at longer contexts: at 4096 tokens, naive INT4 degrades to $\Delta$PPL~+8293 while nsep+pchan remains at~+0.19 (44{,}000$\times$). On models where naive INT4 already works, nsep+pchan introduces no catastrophic degradation (worst case: +0.24 $\Delta$PPL). Across 12 Pre-LN models from 124M to 40B parameters spanning 4 architecture families, nsep+pchan achieves $\Delta$PPL~$<$~2.0 at INT4 with no training, no calibration data, and negligible computational overhead. We validate that real INT4 packing (packed \texttt{uint8}, 2 values per byte) produces identical quality to simulated quantization ($\Delta$PPL difference~$<$~0.005) while achieving 3.4--3.7$\times$ actual memory reduction. Code and results are available at \url{https://github.com/metaSATOKEN/norm-separated-quantization}.
 \end{abstract}
 
 %% ============================================================
@@ -61,7 +61,7 @@ We investigate these questions and arrive at a simple technique---\textbf{norm-s
 Combined with per-channel quantization (to handle activation outlier channels), this gives a universal INT4 method we call \textbf{nsep+pchan} that:
 \begin{itemize}[nosep]
   \item \textbf{Rescues catastrophic failures}: $\Delta$PPL~+238~$\to$~+0.32 on Qwen2-7B (744$\times$)
-  \item \textbf{Never hurts}: Worst-case degradation of +0.24 $\Delta$PPL (on OPT-125m)
+  \item \textbf{No catastrophic degradation}: Worst-case +0.24 $\Delta$PPL on models where naive4 works (OPT-125m)
   \item \textbf{Requires nothing}: No training, no calibration data, no model-specific tuning
   \item \textbf{Scales}: Validated on 12 models from 124M to 40B
 \end{itemize}
@@ -295,7 +295,7 @@ OPT-125m & 125M & 64 & MHA & +1.22 & +1.46 & 1$\times$ \\
 
 \textbf{Safety-net property}: nsep+pchan provides large improvements exactly when needed (naive4 $\Delta$PPL~$>$~10 $\to$ 6--744$\times$ improvement) and introduces negligible change when not needed (naive4 $\Delta$PPL~$<$~1 $\to$ within 0.24). It never causes catastrophic degradation.
 
-\textbf{Negative $\Delta$PPL}: Pythia-2.8B shows $\Delta$PPL~=~$-$0.06 on curated text, nominally below the uncompressed baseline. However, given the per-chunk variance in our evaluation (5 chunks), this value is likely within measurement noise and should not be interpreted as a genuine improvement.
+\textbf{Negative $\Delta$PPL}: Pythia-2.8B shows $\Delta$PPL~=~$-$0.06 on curated text, nominally below the uncompressed baseline. However, given the per-chunk variance in our evaluation (5 chunks; see Appendix~\ref{sec:evaltext} for protocol details), this value is likely within measurement noise and should not be interpreted as a genuine improvement.
 
 \textbf{Model-family patterns}: OPT models consistently show the smallest benefit (outlier ratios 1.4--3.1$\times$, among the lowest). Pythia models benefit most strongly. Qwen models show the largest \emph{potential} improvement when outliers are severe (Qwen2-7B) but no benefit when they are mild (Qwen2.5-14B).
 
@@ -386,7 +386,7 @@ Model & Prefill & Base PPL & naive4 & nsep+pchan4 \\
 
 On Qwen2-7B, naive INT4 degradation \emph{escalates with context length}: $\Delta$PPL rises from +207 at 1024 tokens to \textbf{+8293 at 4096 tokens}. nsep+pchan4 remains within $\pm$0.6 across all lengths---a 44{,}000$\times$ improvement at 4096 tokens. This worsening likely reflects error accumulation in attention computation: as more tokens are stored in the quantized KV cache, the cumulative effect of noisy mid-range values grows.
 
-On Mistral-7B (where naive INT4 already works), nsep+pchan4 performs identically---$|\Delta\text{PPL}| < 0.15$ for both methods at all lengths. This confirms the safety-net property: nsep+pchan never hurts on models that don't need it.
+On Mistral-7B (where naive INT4 already works), nsep+pchan4 performs identically---$|\Delta\text{PPL}| < 0.15$ for both methods at all lengths. This confirms that nsep+pchan introduces no degradation on models where naive INT4 already works.
 
 \begin{figure}[t]
   \centering
@@ -467,7 +467,7 @@ Our evaluation spans models using Pre-LN \citep{xiong2020layer}, RMSNorm \citep{
 
 We presented norm-separated quantization, a training-free preprocessing step that improves the robustness of KV cache INT4 quantization. The method is motivated by the observation that KV vectors in Pre-LN Transformers have high token-wise norm variation, which inflates the dynamic range that quantization must capture. By separating the norm (stored exactly) from the direction (quantized), we compress this range before quantization begins.
 
-Combined with per-channel quantization to handle activation outlier channels, the method (nsep+pchan) provides a universal safety net:
+Combined with per-channel quantization to handle activation outlier channels, the method (nsep+pchan) provides large improvements exactly when needed:
 \begin{itemize}[nosep]
   \item \textbf{744$\times$ improvement} on the worst case (Qwen2-7B: +238 $\to$ +0.32)
   \item \textbf{Never catastrophic}: worst degradation is +0.24 $\Delta$PPL (OPT-125m)
