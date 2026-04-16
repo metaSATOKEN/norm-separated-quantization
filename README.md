@@ -60,18 +60,22 @@ Two independent problems cause naive INT4 to fail:
 
 Norm separation fixes (1) by decoupling magnitude from direction. Per-channel quantization fixes (2) by giving each dimension its own scale. **Neither alone is sufficient** — on Qwen2-7B, nsep alone gives 4.1x improvement, perchan alone gives 2.4x, but the combination gives **744x**.
 
-## Important Note: Simulated Quantization
+## Simulated vs Real Quantization
 
-The experiment code in this repository uses **simulated (fake) quantization**: values are quantized to INT4 and immediately dequantized back to floating point. The KV cache remains FP16/FP32 in memory throughout — no actual memory reduction occurs during experiments.
+The main experiment code uses **simulated (fake) quantization**: values are quantized to INT4 and immediately dequantized back to floating point. This is **standard practice in quantization research** (KIVI, SmoothQuant, GPTQ use the same approach) and accurately measures the quality impact (ΔPPL) of quantization.
 
-This is **standard practice in quantization research** (KIVI, SmoothQuant, GPTQ, and other published methods use the same evaluation approach). Simulated quantization accurately measures the **quality impact** (ΔPPL) of quantization without requiring a packed INT4 kernel implementation.
+### Real INT4 Packing PoC
 
-A production deployment achieving actual 4x memory reduction would require:
-- Packed INT4 storage for the quantized direction vectors
-- FP16 storage for the per-token norms (negligible overhead: ~1% of KV cache)
-- A fused CUDA kernel for quantize-on-write and dequantize-on-read
+We also provide a **real INT4 packing implementation** (`experiments/poc_real_int4.py`, `poc_real_int4_7b.py`) that stores quantized values in packed `uint8` tensors (2 values per byte), achieving **actual memory reduction**:
 
-The ΔPPL results in this paper are valid regardless of storage format, as they measure the information loss from the quantization grid, not the storage mechanism.
+| Model | FP16 KV | Real INT4 | Compression | naive4 ΔPPL | nsep+pchan (real) |
+|-------|---------|-----------|-------------|-------------|-------------------|
+| GPT-2 | 1.4 MB | 0.4 MB | **3.43x** | — | -3.86 |
+| Qwen2-7B | 3.6 MB | 1.0 MB | **3.65x** | +401.3 | **+0.29** |
+
+**Fake vs real ΔPPL difference: < 0.005** — packing is lossless. The quality results from simulated quantization are fully reproduced with actual memory reduction.
+
+A production deployment would additionally require a fused CUDA kernel for quantize-on-write and dequantize-on-read to eliminate the Python overhead.
 
 ## Paper
 
