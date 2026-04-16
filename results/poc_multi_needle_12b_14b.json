@@ -1,0 +1,13 @@
+{
+  "experiment": "poc_multi_needle_12b_14b",
+  "timestamp": "2026-04-16T09:22:15",
+  "complete_matrix": {
+    "Qwen2-7B":    {"outlier": 8.6, "baseline": "26/26", "naive4": "0/26",  "nsep": "26/26", "note": "catastrophic failure, full recovery"},
+    "Qwen2.5-14B": {"outlier": 3.5, "baseline": "26/26", "naive4": "26/26", "nsep": "26/26", "note": "low outlier, naive4 works fine"},
+    "Mistral-7B":  {"outlier": 3.1, "baseline": "7/26",  "naive4": "8/26",  "nsep": "5/26",  "note": "baseline unstable, model capability limit"},
+    "Pythia-12B":  {"outlier": 4.6, "baseline": "0/21",  "naive4": "0/21",  "nsep": "3/21",  "note": "base model, cannot do multi-needle QA"},
+    "Pythia-6.9B": {"outlier": 4.6, "baseline": "0/21",  "naive4": "0/21",  "nsep": "0/21",  "note": "base model, cannot do multi-needle QA"}
+  },
+  "finding": "Needle retrieval failure under naive4 requires BOTH: (1) high outlier ratio (>8x) AND (2) sufficient model instruction-following capability. Only Qwen2-7B meets both conditions. Qwen2.5-14B (low outlier, 3.5x) passes all needles even with naive4 -- confirming that the outlier ratio, not model size, determines quantization vulnerability.",
+  "threshold": "Outlier ratio ~8x appears to be the critical threshold for catastrophic needle loss."
+}
