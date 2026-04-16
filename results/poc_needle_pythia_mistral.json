@@ -1,0 +1,10 @@
+{
+  "experiment": "poc_needle_pythia_mistral",
+  "timestamp": "2026-04-16T08:44:34",
+  "grand_summary": {
+    "Qwen2-7B":    {"baseline": "15/15", "naive4": "0/15",  "nsep_pchan4": "15/15", "outlier_ratio": 8.6},
+    "Pythia-6.9B": {"baseline": "15/15", "naive4": "15/15", "nsep_pchan4": "15/15", "outlier_ratio": 4.6},
+    "Mistral-7B":  {"baseline": "15/15", "naive4": "15/15", "nsep_pchan4": "15/15", "outlier_ratio": 3.1}
+  },
+  "finding": "Needle retrieval failure correlates with outlier ratio: only Qwen2-7B (ratio 8.6x) loses all needles under naive4. Pythia-6.9B (4.6x, DPPL +22) retains all needles despite PPL degradation. nsep+pchan4 achieves 15/15 on all models."
+}
