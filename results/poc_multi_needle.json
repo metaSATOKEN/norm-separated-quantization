@@ -1,0 +1,11 @@
+{
+  "experiment": "poc_multi_needle",
+  "timestamp": "2026-04-16T09:08:11",
+  "summary": {
+    "Qwen2-7B":    {"baseline": "26/26", "naive4": "0/26",  "nsep_pchan4": "26/26"},
+    "Pythia-6.9B": {"baseline": "0/21",  "naive4": "0/21",  "nsep_pchan4": "0/21"},
+    "Mistral-7B":  {"baseline": "7/26",  "naive4": "8/26",  "nsep_pchan4": "5/26"}
+  },
+  "finding": "Multi-needle retrieval is only measurable on Qwen2-7B (strong instruction following). Pythia-6.9B (base model, no instruction tuning) cannot perform multi-needle QA even at FP16 baseline (0/21). Mistral-7B shows inconsistent baseline performance (7/26), making quantization impact unmeasurable. On Qwen2-7B, the pattern is perfectly clear: naive4 0/26, nsep+pchan4 26/26.",
+  "limitation": "Multi-needle QA requires instruction-following capability. Base models (Pythia) cannot be evaluated with this protocol. Single-needle with simple prompt format (previous experiments) is more universally applicable."
+}
