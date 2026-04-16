@@ -1,0 +1,12 @@
+{
+  "experiment": "poc_real_int4",
+  "timestamp": "2026-04-16T14:43:38.995162",
+  "model": "GPT-2",
+  "fp16_bytes": 1437696,
+  "real_int4_bytes": 418752,
+  "compression_ratio": 3.43,
+  "fake_dppl": -3.8681,
+  "real_dppl": -3.8635,
+  "packing_lossless": true,
+  "logits_cosine": 0.9999994
+}
