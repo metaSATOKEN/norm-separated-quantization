@@ -60,6 +60,19 @@ Two independent problems cause naive INT4 to fail:
 
 Norm separation fixes (1) by decoupling magnitude from direction. Per-channel quantization fixes (2) by giving each dimension its own scale. **Neither alone is sufficient** — on Qwen2-7B, nsep alone gives 4.1x improvement, perchan alone gives 2.4x, but the combination gives **744x**.
 
+## Important Note: Simulated Quantization
+
+The experiment code in this repository uses **simulated (fake) quantization**: values are quantized to INT4 and immediately dequantized back to floating point. The KV cache remains FP16/FP32 in memory throughout — no actual memory reduction occurs during experiments.
+
+This is **standard practice in quantization research** (KIVI, SmoothQuant, GPTQ, and other published methods use the same evaluation approach). Simulated quantization accurately measures the **quality impact** (ΔPPL) of quantization without requiring a packed INT4 kernel implementation.
+
+A production deployment achieving actual 4x memory reduction would require:
+- Packed INT4 storage for the quantized direction vectors
+- FP16 storage for the per-token norms (negligible overhead: ~1% of KV cache)
+- A fused CUDA kernel for quantize-on-write and dequantize-on-read
+
+The ΔPPL results in this paper are valid regardless of storage format, as they measure the information loss from the quantization grid, not the storage mechanism.
+
 ## Paper
 
 📄 **[Norm-Separated Quantization: A Training-Free Fix for KV Cache INT4 Failures](paper/arc_compression.pdf)** (14 pages, 5 figures)
