@@ -28,11 +28,12 @@ x_q = norm * direction_q
 
 ## Key Results
 
-### WikiText-2 (7 models, 124M to 14B)
+### WikiText-2 (8 models, 124M to 14B)
 
 | Model | Params | naive INT4 | nsep+pchan | Improvement |
 |-------|--------|-----------|------------|-------------|
 | GPT-2 | 124M | +1.60 | +1.13 | 1.4x |
+| Pythia-410M | 410M | +171.13 | +23.46 | **7.3x** |
 | Pythia-2.8B | 2.8B | +14.74 | +1.99 | **7.4x** |
 | Pythia-6.9B | 6.9B | +22.56 | +1.21 | **18.7x** |
 | Mistral-7B | 7B | +0.10 | +0.04 | 2.6x |
@@ -47,9 +48,30 @@ x_q = norm * direction_q
 | Qwen2-7B | +8293 | +0.19 | **44,000x** |
 | Mistral-7B | +0.11 | +0.12 | 1x (no harm) |
 
+### Needle-in-Haystack: Factual Retrieval
+
+Does KV cache quantization make models forget facts buried in context?
+
+**Single-needle** (secret code hidden in 185-1413 token haystack):
+
+| Model | Outlier ratio | naive INT4 | nsep+pchan |
+|-------|:---:|:---:|:---:|
+| Qwen2-7B | 8.6x | **0/15** | **15/15** |
+| Pythia-6.9B | 4.6x | 15/15 | 15/15 |
+| Mistral-7B | 3.1x | 15/15 | 15/15 |
+
+**Multi-needle** (3-5 secrets across 280-2459 tokens):
+
+| Model | Outlier ratio | baseline | naive INT4 | nsep+pchan |
+|-------|:---:|:---:|:---:|:---:|
+| **Qwen2-7B** | **8.6x** | **26/26** | **0/26** | **26/26** |
+| Qwen2.5-14B | 3.5x | 26/26 | 26/26 | 26/26 |
+
+On Qwen2-7B, naive INT4 causes **complete loss of all embedded facts** (0/26). nsep+pchan4 **fully recovers every needle** (26/26). Models with low outlier ratios (Qwen2.5-14B: 3.5x) retain all needles even with naive INT4.
+
 ### 12-Model Sweep (124M to 40B)
 
-Validated on GPT-2, OPT (125M, 1.3B, 13B), Pythia (410M, 2.8B, 6.9B, 12B), Qwen2 (0.5B, 7B), Qwen2.5-14B, Mistral-7B, and Falcon-40B. nsep+pchan achieves ΔPPL < 4.1 on all models. See [paper](paper/arc_compression.pdf) Table 2.
+Validated on GPT-2, OPT (125M, 1.3B, 13B), Pythia (410M, 2.8B, 6.9B, 12B), Qwen2 (0.5B, 7B), Qwen2.5-14B, Mistral-7B, and Falcon-40B. See [paper](paper/arc_compression.pdf) Table 2.
 
 ## Why It Works
 
@@ -79,20 +101,24 @@ A production deployment would additionally require a fused CUDA kernel for quant
 
 ## Paper
 
-📄 **[Norm-Separated Quantization: A Training-Free Fix for KV Cache INT4 Failures](paper/arc_compression.pdf)** (14 pages, 5 figures)
+📄 **[Norm-Separated Quantization: A Training-Free Fix for KV Cache INT4 Failures](paper/arc_compression.pdf)** (18 pages, 5 figures, 7 appendices)
 
 ## Repository Structure
 
 ```
 norm-separated-quantization/
 ├── paper/                      # LaTeX source, PDF, figures
-├── experiments/                # All experiment scripts
+├── experiments/
 │   ├── phase0_*.py            # Structure verification (local, M1)
 │   ├── phase1_*.py            # Hidden-state compression (local)
 │   ├── phase4*_*.py           # KV cache compression (local)
 │   ├── phase5*_*.py           # 7B+ scaling (Colab GPU)
 │   ├── phase6*_*.py           # WikiText-2 benchmarks
-│   ├── phase7*_*.py           # Appendix experiments
+│   ├── phase7*_*.py           # Appendix experiments (long ctx, KIVI, memory)
+│   ├── phase8_*.py            # Post-LN control experiment
+│   ├── poc_real_int4*.py      # Real INT4 packing PoC
+│   ├── poc_needle*.py         # Needle-in-Haystack experiments
+│   ├── poc_multi_needle*.py   # Multi-needle retrieval experiments
 │   ├── generate_figures.py    # Reproduce all paper figures
 │   ├── compressors.py         # Compression primitives
 │   └── requirements.txt
@@ -123,11 +149,14 @@ python phase4b_asymmetric_quantization.py
 
 # WikiText-2 benchmark (GPT-2)
 python phase6_figure1_wikitext.py
+
+# Real INT4 packing PoC
+python poc_real_int4.py
 ```
 
 ### Run GPU experiments (Colab)
 
-Copy-paste scripts from `experiments/phase5*.py` or `phase7*.py` into Google Colab cells. Split at the `# === CELL 1 ===` / `# === CELL 2 ===` markers.
+Copy-paste scripts from `experiments/phase5*.py`, `phase7*.py`, or `poc_*.py` into Google Colab cells. Split at the `# === CELL 1 ===` / `# === CELL 2 ===` markers.
 
 ## Models Tested
 
