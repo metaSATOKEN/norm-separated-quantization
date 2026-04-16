@@ -1,0 +1,18 @@
+{
+  "experiment": "poc_needle_long_pythia",
+  "timestamp": "2026-04-16T08:51:43",
+  "model": "Pythia-6.9B",
+  "max_tokens_tested": 1413,
+  "summary": {
+    "baseline": "30/30 (100%)",
+    "naive4": "30/30 (100%)",
+    "nsep_pchan4": "30/30 (100%)"
+  },
+  "finding": "Pythia-6.9B (naive4 DPPL +22, outlier ratio 4.6x) retains needle retrieval even at 1413 tokens. Needle retrieval failure requires catastrophic quantization damage (DPPL >200, outlier ratio >8x), as seen only in Qwen2-7B. Moderate PPL degradation does not destroy factual recall.",
+  "grand_summary_all_models": {
+    "Qwen2-7B":    {"outlier_ratio": 8.6, "naive4_dppl": 238, "needle_naive4": "0/15",  "needle_nsep": "15/15"},
+    "Pythia-6.9B": {"outlier_ratio": 4.6, "naive4_dppl": 22,  "needle_naive4": "30/30", "needle_nsep": "30/30"},
+    "Mistral-7B":  {"outlier_ratio": 3.1, "naive4_dppl": 0.1, "needle_naive4": "15/15", "needle_nsep": "15/15"}
+  },
+  "conclusion": "Needle-in-Haystack failure is specific to catastrophic quantization (outlier ratio >8x). nsep+pchan4 achieves perfect retrieval on all models. PPL improvement is the broader contribution; needle rescue is the extreme case."
+}
