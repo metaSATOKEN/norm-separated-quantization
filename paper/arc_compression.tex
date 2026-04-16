@@ -492,6 +492,20 @@ During development, we encountered a subtle but critical bug: \texttt{x.norm(-1,
 This caused direction vectors to explode to ${\sim}$3000$\times$ their expected magnitude, producing $\Delta$PPL in the thousands. The bug was invisible on CPU (Apple MPS) and only manifested on CUDA, likely due to different numerical behavior at extreme scales. It was caught through systematic cross-device validation---a reminder that quantization code should always be tested on the target hardware.
 
 %% ============================================================
+\section{Evaluation Text Details}
+\label{sec:evaltext}
+
+Our ``curated text'' evaluation uses two passages (approximately 200 and 100 tokens each) designed to cover distinct linguistic registers:
+
+\begin{itemize}[nosep]
+  \item \textbf{Narrative}: A fictional passage about a lighthouse keeper observing a mysterious light at sea. Contains varied sentence structures, concrete nouns, sensory descriptions, and temporal transitions.
+  \item \textbf{Technical}: A factual passage about the history of artificial intelligence, covering the Dartmouth conference, AI winters, expert systems, neural network revival, and the transformer architecture. Contains proper nouns, dates, and domain-specific terminology.
+\end{itemize}
+
+Both passages are hardcoded in the experiment scripts and available in the repository. The 12-model sweep (Table~\ref{tab:sweep}) uses these passages with a 40-token continuation window. A separate basis text (distinct from the evaluation text) is used for PCA basis computation in experiments that require it, to avoid data leakage.
+
+WikiText-2 evaluation (\S5.5) uses the standard test split \citep{merity2017pointer} with 150-token prefill chunks and 30-token continuations, averaged over 5 non-overlapping chunks. Long-context evaluation (\S5.6) concatenates WikiText-2 articles to form sequences of 256--4096 tokens.
+
 \section{Long Context Stability}
 
 Full long-context results for Pythia-6.9B, Qwen2-7B, and Mistral-7B (256--4096 tokens) are presented in Table~\ref{tab:longctx_main} in the main text (\S5.6).
