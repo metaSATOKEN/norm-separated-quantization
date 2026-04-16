@@ -1,0 +1,13 @@
+{
+  "experiment": "poc_needle_in_haystack",
+  "timestamp": "2026-04-16T08:37:09",
+  "model": "Qwen2-7B",
+  "needle": "BLUE ELEPHANT 7742",
+  "summary": {
+    "baseline": {"found": 15, "total": 15, "rate": "100%"},
+    "naive4": {"found": 0, "total": 15, "rate": "0%"},
+    "nsep_pchan4": {"found": 15, "total": 15, "rate": "100%"}
+  },
+  "conditions": "3 haystack sizes (5/10/20 paragraphs = 232/413/794 tokens) x 5 needle positions (0%/25%/50%/75%/100%)",
+  "finding": "naive INT4 completely destroys needle retrieval on Qwen2-7B (0/15). nsep+pchan4 fully recovers it (15/15), matching FP16 baseline exactly."
+}
