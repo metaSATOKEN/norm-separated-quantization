@@ -38,7 +38,7 @@
 \maketitle
 
 \begin{abstract}
-INT4 quantization of KV caches is a standard technique for reducing the memory footprint of large language model inference, but it can fail catastrophically on certain models---we observe $\Delta$PPL as high as +238 on Qwen2-7B under naive absmax quantization. We trace the root cause to two independent factors: (1)~large token-wise norm variation in KV vectors, which forces the quantization scale to accommodate extreme dynamic ranges, and (2)~activation outlier channels that corrupt the quantization scale for normal channels. We propose \textbf{norm-separated quantization}---a simple preprocessing step that decomposes each KV vector into its L2 norm (stored at full precision) and unit direction (quantized). Combined with per-channel scaling, this method (nsep+pchan) reduces the Qwen2-7B failure from $\Delta$PPL~+812 to~+0.43 on WikiText-2 (1885$\times$ improvement), with the gap widening at longer contexts: at 4096 tokens, naive INT4 degrades to $\Delta$PPL~+8293 while nsep+pchan remains at~+0.19 (44{,}000$\times$). On models where naive INT4 already works, nsep+pchan introduces no catastrophic degradation (worst case: +0.24 $\Delta$PPL). Across 12 Pre-LN models from 124M to 40B parameters spanning 4 architecture families, nsep+pchan achieves $\Delta$PPL~$<$~2.0 at INT4 with no training, no calibration data, and negligible computational overhead. We validate that real INT4 packing (packed \texttt{uint8}, 2 values per byte) produces identical quality to simulated quantization ($\Delta$PPL difference~$<$~0.005) while achieving 3.4--3.7$\times$ actual memory reduction. A study of 11 additional models from six vendors (Meta, Google, Microsoft, Mistral AI, DeepSeek, Alibaba) reveals that catastrophic naive~INT4 failure specifically requires $K_{\max} \gtrsim 15\times$ at Layer~0 (observed in 1/11 models); $V$ outliers up to 39.63$\times$ are tolerated. Code and results are available at \url{https://github.com/metaSATOKEN/norm-separated-quantization}.
+INT4 quantization of KV caches is a standard technique for reducing the memory footprint of large language model inference, but it can fail catastrophically on certain models---we observe $\Delta$PPL as high as +238 on Qwen2-7B under naive absmax quantization. We trace the root cause to two independent factors: (1)~large token-wise norm variation in KV vectors, which forces the quantization scale to accommodate extreme dynamic ranges, and (2)~activation outlier channels that corrupt the quantization scale for normal channels. We propose \textbf{norm-separated quantization}---a simple preprocessing step that decomposes each KV vector into its L2 norm (stored at full precision) and unit direction (quantized). Combined with per-channel scaling, this method (nsep+pchan) reduces the Qwen2-7B failure from $\Delta$PPL~+812 to~+0.43 on WikiText-2 (1885$\times$ improvement), with the gap widening at longer contexts: at 4096 tokens, naive INT4 degrades to $\Delta$PPL~+8293 while nsep+pchan remains at~+0.19 (44{,}000$\times$). On models where naive INT4 already works, nsep+pchan introduces no catastrophic degradation (worst case: +0.24 $\Delta$PPL). Across 12 Pre-LN models from 124M to 40B parameters spanning 4 architecture families, nsep+pchan achieves $\Delta$PPL~$<$~2.0 at INT4 with no training, no calibration data, and minimal memory overhead ($<$0.1\% of KV cache). Our unoptimized Python implementation adds~+21\% decode latency; we expect this to approach zero with fused CUDA kernels given the low arithmetic intensity. We validate that real INT4 packing (packed \texttt{uint8}, 2 values per byte) produces matching quality to simulated quantization ($\Delta$PPL difference~$<$~0.005) while achieving 3.4--3.7$\times$ actual memory reduction. A study of 11 additional models from six vendors (Meta, Google, Microsoft, Mistral AI, DeepSeek, Alibaba) finds that the sole catastrophic case (Qwen2-7B) is the only model in the sample with $K_{\max} \gtrsim 15\times$ concentrated at Layer~0, suggesting this combination as a candidate pathology signature; $V$ outliers up to 39.63$\times$ were tolerated without NIAH degradation. Sample size (1/11 catastrophic) is too small to estimate population failure rate. Code and results are available at \url{https://github.com/metaSATOKEN/norm-separated-quantization}.
 \end{abstract}
 
 %% ============================================================
@@ -58,10 +58,10 @@ What determines whether naive INT4 succeeds or fails? And can we make it reliabl
 
 We investigate these questions and arrive at a simple technique---\textbf{norm-separated quantization}---that eliminates catastrophic failures by decomposing each vector into its magnitude (stored exactly) and direction (quantized). The key insight is that KV vectors in Pre-LN Transformers have high norm variance across tokens, and this variance inflates the dynamic range that quantization must capture. Separating the norm first compresses this range, making quantization more precise with the same number of bits.
 
-Combined with per-channel quantization (to handle activation outlier channels), this gives a universal INT4 method we call \textbf{nsep+pchan} that:
+Combined with per-channel quantization (to handle activation outlier channels), this gives a broadly applicable INT4 method for Pre-LN Transformers, which we call \textbf{nsep+pchan}, that:
 \begin{itemize}[nosep]
   \item \textbf{Rescues catastrophic failures}: $\Delta$PPL~+238~$\to$~+0.32 on Qwen2-7B (744$\times$)
-  \item \textbf{No catastrophic degradation}: Worst-case +0.24 $\Delta$PPL on models where naive4 works (OPT-125m)
+  \item \textbf{No catastrophic degradation observed}: Across our 12-model evaluation, worst case is +0.24 $\Delta$PPL on models where naive4 works (OPT-125m)
   \item \textbf{Requires nothing}: No training, no calibration data, no model-specific tuning
   \item \textbf{Scales}: Validated on 12 models from 124M to 40B
 \end{itemize}
@@ -287,13 +287,13 @@ GPT-2 & 124M & 64 & MHA & +0.64 & +0.56 & 1$\times$ \\
 OPT-125m & 125M & 64 & MHA & +1.22 & +1.46 & 1$\times$ \\
 \bottomrule
 \end{tabular}
-\caption{Complete model sweep (curated text). $\Delta$PPL for naive INT4 vs.\ nsep+pchan INT4 across 12 Pre-LN models. nsep+pchan provides large improvements where needed (6--744$\times$ when naive4 $\Delta$PPL~$>$~10) and never causes catastrophic degradation (worst case:~+0.24 on OPT-125m).}
+\caption{Complete model sweep (curated text). $\Delta$PPL for naive INT4 vs.\ nsep+pchan INT4 across 12 Pre-LN models. nsep+pchan provides large improvements where needed (6--744$\times$ when naive4 $\Delta$PPL~$>$~10); within our 12-model evaluation, we did not observe catastrophic degradation (worst case:~+0.24 on OPT-125m).}
 \label{tab:sweep}
 \end{table}
 
 \subsection{Key Patterns}
 
-\textbf{Safety-net property}: nsep+pchan provides large improvements exactly when needed (naive4 $\Delta$PPL~$>$~10 $\to$ 6--744$\times$ improvement) and introduces negligible change when not needed (naive4 $\Delta$PPL~$<$~1 $\to$ within 0.24). It never causes catastrophic degradation.
+\textbf{Safety-net property}: nsep+pchan provides large improvements exactly when needed (naive4 $\Delta$PPL~$>$~10 $\to$ 6--744$\times$ improvement) and introduces negligible change when not needed (naive4 $\Delta$PPL~$<$~1 $\to$ within 0.24). Across the 12 models in our evaluation, we did not observe catastrophic degradation from nsep+pchan on any model.
 
 \textbf{Negative $\Delta$PPL}: Pythia-2.8B shows $\Delta$PPL~=~$-$0.06 on curated text, nominally below the uncompressed baseline. However, given the per-chunk variance in our evaluation (5 chunks; see Appendix~\ref{sec:evaltext} for protocol details), this value is likely within measurement noise and should not be interpreted as a genuine improvement.
 
@@ -402,7 +402,7 @@ On Mistral-7B (where naive INT4 already works), nsep+pchan4 performs identically
 
 Across our 12 models, naive INT4 failure ($\Delta$PPL~$>$~10) correlates with:
 \begin{enumerate}[nosep]
-  \item \textbf{Outlier channel ratio} in Layer~0/final layer: Models with ratio~$>$~4$\times$ tend to fail. Appendix~\ref{sec:kv_asymmetry} refines this by separating $K$ and $V$ outliers across 11 models: only models with $K_{\max} \gtrsim 15\times$ \emph{at Layer~0} are catastrophic. $V$ outliers are tolerated at magnitudes up to at least 39.63$\times$.
+  \item \textbf{Outlier channel ratio} in Layer~0/final layer: Models with ratio~$>$~4$\times$ tend to fail. Appendix~\ref{sec:kv_asymmetry} refines this by separating $K$ and $V$ outliers across 11 models: in our sample, the sole catastrophic case exhibits $K_{\max} \gtrsim 15\times$ concentrated at Layer~0, while $V$ outliers were tolerated at magnitudes up to at least 39.63$\times$.
   \item \textbf{Model family}: Pythia consistently fails; OPT consistently succeeds
   \item \textbf{Not simply model size}: OPT-13B (+0.28) succeeds while Pythia-410M (+77.5) fails
 \end{enumerate}
@@ -438,10 +438,11 @@ Our norm separation is complementary to existing KV cache compression techniques
 \subsection{Limitations}
 
 \begin{enumerate}[nosep]
+  \item \textbf{Statistical power}: Our characterization of the catastrophic failure condition rests on a single such case (Qwen2-7B) across 23 models evaluated (12 main + 11 K/V study). The $K_{\max} \gtrsim 15\times$-at-Layer-0 description should therefore be read as a candidate pathology signature observed in our sample, not an established necessary condition. Rigorous threshold characterization requires a larger catastrophic-case sample, which current open-model availability does not provide.
   \item \textbf{Context length coverage}: Our curated-text evaluation uses sequences under 250 tokens, supplemented by WikiText-2 evaluation on 8 models and long-context evaluation up to 4096 tokens on 3 models (Section~5.6). Full long-context evaluation across all 12 models would further strengthen the results.
-  \item \textbf{No end-to-end benchmarks}: We measure $\Delta$PPL but not inference throughput, latency, or peak memory in production settings.
-  \item \textbf{No comparison with KIVI/Gear}: Direct comparison with state-of-the-art KV compression methods would clarify the relative and additive value of norm separation.
-  \item \textbf{Post-LN limited}: GPT-1 (Post-LN) does not expose a KV cache through standard APIs, preventing direct evaluation. A distributional analysis (Appendix~\ref{sec:postln}) confirms that Post-LN KV vectors exhibit weaker norm dominance ($|r|=0.74$ vs $0.99$), suggesting reduced but non-zero benefit from norm separation.
+  \item \textbf{System optimization}: We report $\Delta$PPL but not end-to-end inference throughput in production settings. Our unoptimized Python implementation shows +21\% decode latency overhead on 7B-class models; deployment would require custom CUDA kernels.
+  \item \textbf{KIVI/GEAR comparison}: The comparison in Appendix~\ref{sec:kivi} uses a substantially simplified KIVI baseline (omitting residual quantization and calibration) and should be read as a demonstration that norm separation provides additive value as a preprocessing step, not as a head-to-head benchmark against published KIVI.
+  \item \textbf{Post-LN limited}: GPT-1 (Post-LN) does not expose a KV cache through standard APIs, preventing direct evaluation. A distributional analysis (Appendix~\ref{sec:postln}) finds that Post-LN KV vectors exhibit weaker norm dominance ($|r|=0.74$ vs $0.99$), suggesting reduced but non-zero benefit from norm separation.
 \end{enumerate}
 
 %% ============================================================
@@ -469,14 +470,14 @@ We presented norm-separated quantization, a training-free preprocessing step tha
 
 Combined with per-channel quantization to handle activation outlier channels, the method (nsep+pchan) provides large improvements exactly when needed:
 \begin{itemize}[nosep]
-  \item \textbf{744$\times$ improvement} on the worst case (Qwen2-7B: +238 $\to$ +0.32)
-  \item \textbf{Never catastrophic}: worst degradation is +0.24 $\Delta$PPL (OPT-125m)
+  \item \textbf{744$\times$ improvement} on the single catastrophic case (Qwen2-7B: +238 $\to$ +0.32)
+  \item \textbf{No catastrophic degradation observed}: worst case across 12 models is +0.24 $\Delta$PPL (OPT-125m)
   \item \textbf{12 models from 124M to 40B}, 4 architecture families (GPT, Pythia, OPT, Qwen, Falcon)
-  \item \textbf{Zero training, zero calibration, negligible overhead}
+  \item \textbf{Zero training, zero calibration, minimal memory overhead} ($<$0.1\% of KV cache; +21\% Python decode latency, expected to approach zero with fused CUDA kernels)
   \item \textbf{3.4--3.7$\times$ actual memory reduction} confirmed with real INT4 packing
 \end{itemize}
 
-A detailed study of K and V outlier asymmetry across 11 models from six vendors (Appendix~\ref{sec:kv_asymmetry}) refines the picture of when naive INT4 breaks: the catastrophic pattern is specifically $K_{\max} \gtrsim 15\times$ concentrated at Layer~0, which in our sample occurs in 1 of 11 models (Qwen2-7B). $V$ outliers up to 39.63$\times$ and late-layer $K$ outliers up to 10.65$\times$ are tolerated. Because this specific pathology is hard to predict \emph{a~priori} from publicly available model information, the practical recommendation is to apply nsep+pchan4 as a default: negligible cost on the 10/11 models that do not need it, and the difference between a broken and working system on the 1/11 that does.
+A study of K and V outlier patterns across 11 additional models from six vendors (Appendix~\ref{sec:kv_asymmetry}) suggests a candidate pathology signature: the sole catastrophic case in our combined 23-model sample (Qwen2-7B) is also the only model with $K_{\max} \gtrsim 15\times$ concentrated at Layer~0. $V$ outliers up to 39.63$\times$ and late-layer $K$ outliers up to 10.65$\times$ were tolerated without NIAH degradation. The small sample size (one catastrophic case) precludes estimating population failure rate; we present this signature as a candidate hypothesis rather than an established threshold. Because the pathology is hard to predict from publicly available model information, a practical recommendation is to apply nsep+pchan4 as a default: the observed cost on safe models is small, while for the small fraction of models with the pathology it can be the difference between a broken and working system.
 
 The technique is simple enough to implement in a few lines of code and can be combined with existing KV cache compression methods as a preprocessing step. All code, experiment results, and figures are publicly available.\footnote{\url{https://github.com/metaSATOKEN/norm-separated-quantization}}
 
@@ -533,7 +534,7 @@ nsep+KIVI & +53.60 & ${\sim}$3.0 & norm-sep + KIVI-style \\
 \label{tab:kivi}
 \end{table}
 
-At the same bit budget (3~bpe), norm separation improves KIVI from $\Delta$PPL~+361 to~+54 (6.7$\times$), confirming that norm separation provides value even when combined with per-channel strategies. However, INT2 Key quantization remains too aggressive for this model---nsep+pchan4 at 4~bpe achieves $\Delta$PPL~+3.0, substantially outperforming all 3~bpe variants.
+At the same bit budget (3~bpe), adding norm separation to our KIVI-style baseline improves $\Delta$PPL from~+361 to~+54 (6.7$\times$ in our simplified implementation), suggesting that norm separation provides additive value even when combined with per-channel strategies. INT2 Key quantization appears too aggressive for this model in our setup: nsep+pchan4 at 4~bpe achieves $\Delta$PPL~+3.0, better than the 3~bpe variants we tested. The full KIVI method with its calibration and residual quantization may close this gap; the takeaway of this section is the \emph{additive benefit of norm separation}, not a ranking against KIVI.
 
 \textbf{Important caveat}: Our KIVI implementation uses only the core asymmetric bit allocation (Key INT2, Value INT4 with per-channel scaling) without the calibration, clipping thresholds, or residual quantization described in \citet{liu2024kivi}. These implementation details can significantly affect performance, and the full KIVI system would likely perform substantially better than our simplified baseline. The purpose of this comparison is not to benchmark against KIVI, but to demonstrate that norm separation provides additive value as a preprocessing step---the 6.7$\times$ improvement from adding norm separation to the same underlying quantization scheme (KIVI $\to$ nsep+KIVI) holds regardless of the base method's absolute performance.
 
@@ -704,13 +705,13 @@ DeepSeek-LLM-7B-Chat$^{\ddagger}$ & 9.07$_{L6}$ & 10.04$_{L1}$ & 7.45 & 9/21 & 1
 
 \subsection{Refined Characterization of the Pathology}
 
-Three observations refine the simple ``8$\times$ outlier threshold'' of the main text.
+Three observations refine the simple ``8$\times$ outlier threshold'' of the main text. These are patterns observed in our sample; a single catastrophic case limits the strength of conclusions that can be drawn.
 
-\textbf{(1) V outliers are tolerated at magnitudes up to at least 39.63$\times$.} Mistral-7B (V = 16.47 at Layer~0), Phi-3-mini (24.37 at Layer~1), Phi-3-medium (34.99 at Layer~0), and Gemma~4 31B (39.63 at Layer~12) all pass multi-needle retrieval under naive INT4 despite V outlier ratios far exceeding the nominal 8$\times$ threshold. This places an empirical lower bound of roughly 40$\times$ on V outlier tolerance.
+\textbf{(1) V outliers up to at least 39.63$\times$ were tolerated in our sample.} Mistral-7B (V = 16.47 at Layer~0), Phi-3-mini (24.37 at Layer~1), Phi-3-medium (34.99 at Layer~0), and Gemma~4 31B (39.63 at Layer~12) all pass multi-needle retrieval under naive INT4 despite V outlier ratios far exceeding the nominal 8$\times$ threshold. This places an empirical lower bound on V outlier tolerance in our sample, but does not establish an upper bound: extreme cases beyond 39.63$\times$ may or may not behave similarly.
 
-\textbf{(2) Late-layer K outliers are tolerated up to at least 10.65$\times$.} Qwen2.5-14B has $K_{\max} = 10.65$ at Layer~30 of 48, and achieves 26/26 multi-needle retrieval under naive INT4. The comparable numerical value at Layer~0 (as in Qwen2-7B) would be catastrophic. Late-layer K errors propagate through fewer subsequent layers, limiting their impact.
+\textbf{(2) Late-layer K outliers up to at least 10.65$\times$ were tolerated.} Qwen2.5-14B has $K_{\max} = 10.65$ at Layer~30 of 48, and achieves 26/26 multi-needle retrieval under naive INT4. In contrast, the comparable numerical value at Layer~0 (as in Qwen2-7B's 17.23$\times$) coincides with catastrophic failure. A plausible mechanistic explanation---that late-layer K errors propagate through fewer subsequent attentions---is developed in Section~H.4, but our one-case sample cannot rule out alternative explanations.
 
-\textbf{(3) The pathological pattern is specifically $K_{\max} \gtrsim 15\times$ concentrated at Layer~0.} Qwen2-7B is the only model in our 11-model sample to exhibit this pattern, and it is the only catastrophic failure we have observed across all PPL and NIAH experiments in this paper. The 15$\times$ number is approximate; what matters mechanistically is that a single channel completely dominates the Layer~0 $K$ scale, and Layer~0 errors propagate multiplicatively through every subsequent attention layer.
+\textbf{(3) Candidate pathology signature: $K_{\max}$ approaching or exceeding roughly 15$\times$ at Layer~0.} Qwen2-7B is the only model in our 11-model K/V sample (and across all 23 models evaluated in the paper) to exhibit this combination, and it is the only catastrophic failure we have observed. We emphasize that a single catastrophic case is statistically insufficient to establish either the 15$\times$ magnitude or the Layer-0 location as a necessary condition; the pattern should be read as a candidate signature motivating future investigation with larger catastrophic-case samples. The mechanistic hypothesis behind the signature---a single channel dominating the Layer~0 $K$ scale, with errors propagating through every subsequent attention---is consistent with the observation but awaits validation with additional samples.
 
 \subsection{Mechanistic Interpretation}
 
@@ -737,11 +738,11 @@ Our sample reveals that \emph{training recipe dominates architecture} for outlie
 
 The GQA ratio is \emph{not} predictive: Llama-3.1-8B (4:1) and Qwen2.5-14B (5:1) are safe; Qwen2-7B (7:1) is pathological; but Phi-3-medium (4:1) and Mistral-7B (4:1) are also safe. Whether a model attends with MHA, GQA, or MQA does not determine outlier patterns; whether its training produced a dominant Layer~0 $K$ channel does.
 
-\subsection{Practical Implication: Universal Safety Net}
+\subsection{Practical Implication: A Preprocessing Default for Pre-LN Models}
 
-Because the specific pathology (Layer~0 $K$ with extreme magnitude) is difficult to predict from public model cards and varies substantially across training recipes, a practitioner cannot easily anticipate whether a given model will fail under naive INT4. Our 11-model sample yields a pathology rate of 1/11 ($\approx$9\%), with the single catastrophic case producing 0/26 needle retrieval.
+The candidate pathology (extreme Layer~0 $K$) is difficult to predict from public model cards, and the training-recipe variation we observe across vendors suggests that whether a newly released model is affected is hard to anticipate. In our 11-model K/V sample we observed 1 catastrophic case (Qwen2-7B); across all 23 models evaluated in the paper (12 main sweep + 11 K/V study) we observed the same single case. This sample is too small to reliably estimate a population failure rate---the observation is compatible with anything from a rare legacy-recipe artifact to a broader pattern that happens to be under-represented in open models.
 
-The practical recommendation is therefore to apply nsep+pchan4 \emph{by default}. Our results throughout the paper establish that the method introduces no catastrophic degradation on safe models (worst case: +0.24 $\Delta$PPL, Table~\ref{tab:sweep}); for the small fraction of models harbouring the pathology, it is the difference between a broken production system and a working one.
+The practical recommendation that follows is pragmatic rather than statistical: when deploying KV cache INT4 quantization on a Pre-LN Transformer whose outlier profile has not been audited, applying nsep+pchan as a preprocessing step is cheap (minimal memory overhead; implementation-level latency overhead amenable to kernel fusion) and, within our evaluation, did not produce catastrophic degradation on any safe model (worst case: +0.24 $\Delta$PPL, Table~\ref{tab:sweep}). On models that do exhibit the pathological pattern, it recovered NIAH performance from 0/26 to 26/26. We present this as a defensive default rather than a universal cure: the evidence for recovery rests on one observed catastrophic case, and confidence in the default for models with very different training recipes than those tested would grow with additional catastrophic samples.
 
 %% ============================================================
 \begin{thebibliography}{30}
