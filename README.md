@@ -97,43 +97,47 @@ A follow-up study on 11 additional open models looked at Key and Value outlier r
 - The one catastrophic case (Qwen2-7B) coincides with **K_max ≈ 17× concentrated at Layer 0**, the first attention in the network.
 - **Training recipe appears to dominate architecture** for outlier patterns: MHA vs GQA vs MQA does not predict the pattern; but different vendors (Meta / Google / Microsoft / Mistral / DeepSeek / Alibaba) produce visibly different signatures.
 
-## Layer 0 Causality Experiment
+## Two Failure Modes, Causally Separated
 
-The K/V asymmetry study alone rests on n=1 (only Qwen2-7B is catastrophic). To distinguish "Layer 0 position is incidental" from "Layer 0 is causally responsible", we ran a natural control (GPT-J-6B) and a selective-compression intervention on Qwen2-7B. Full analysis in **Appendix H.5** of the paper.
+The K/V asymmetry study alone rests on n=1 catastrophic case (Qwen2-7B). To distinguish "Layer 0 position is incidental" from "Layer 0 is causally responsible", and to test whether the mechanism generalizes to other failing models, we ran a natural control (GPT-J-6B) and selective-compression interventions on 4 failing models. Full analysis in **Appendix H.5** of the paper.
 
-### Natural Control: GPT-J-6B
+### Natural Control: GPT-J-6B (high K, but at Layer 1 — clean)
 
-GPT-J-6B (EleutherAI, 2021, head_dim=256) exhibits **K_max = 18.15× at Layer 1** — higher magnitude than Qwen2-7B's 17.23× — but **Layer 0 K is only 9.31×**. WikiText-2 ΔPPL under naive INT4: **+0.03 (CLEAN)**. High K magnitude away from Layer 0 does not trigger the catastrophe.
+GPT-J-6B (EleutherAI, 2021, head_dim=256) exhibits **K_max = 18.15× at Layer 1** — higher magnitude than Qwen2-7B's 17.23× — but **Layer 0 K is only 9.31×**. WikiText-2 ΔPPL under naive INT4: **+0.03 (CLEAN)**. High K magnitude *away from Layer 0* does not trigger the catastrophe.
 
-### Intervention: Selective-Compression on Qwen2-7B
+### Intervention: Selective-Compression Across 4 Failing Models
 
-Applying nsep+pchan4 to **only Layer 0** while leaving all other 27 layers under naive INT4:
+On each failing model we compare (i) all layers naive INT4, (ii) all layers nsep+pchan4, (iii) Layer 0 nsep+pchan4 with remaining layers naive INT4, (iv) Layer 0 naive INT4 with remaining layers nsep+pchan4.
 
-| Regime | ΔPPL | Interpretation |
-|--------|:----:|:---------------|
-| baseline (FP16) | — | PPL 8.37 |
-| all_naive4 | **+1382.07** | catastrophic reference |
-| all_nsep+pchan4 | +0.05 | full rescue reference |
-| **L0_nsep, rest naive4** | **+0.38** | **Fix only Layer 0 → 99.97% rescue** |
-| **L0_naive4, rest nsep+pchan4** | **+1368.18** | **Break only Layer 0 → catastrophe preserved** |
-| L0_fp16, rest naive4 | +0.38 | Upper bound: Layer 0 uncompressed |
+| Model | Severity | all_naive4 ΔPPL | L0_nsep only ΔPPL | Rescue by L0 fix |
+|-------|:--------:|:---------------:|:-----------------:|:----------------:|
+| **Qwen2-7B** | catastrophic | **+1382.07** | **+0.38** | **99.97%** |
+| Pythia-12B | strong | +14.82 | +14.78 | 0.3% |
+| Pythia-6.9B | moderate | +7.48 | +7.47 | 0.1% |
+| Qwen2.5-14B | mild | +0.185 | +0.177 | 4.3% |
 
-**Three findings:**
+This cleanly separates two failure modes:
 
-1. **Fixing Layer 0 alone rescues 99.97%** of the catastrophic ΔPPL (+1382 → +0.38). The remaining +0.38 is the additive accumulation of naive INT4 error from the other 27 layers.
-2. **Breaking Layer 0 alone reproduces the catastrophe** (+1368) even when all other layers use nsep+pchan4. Other layers cannot compensate.
-3. **nsep+pchan4 matches FP16 exactly on Layer 0** (+0.38 vs +0.38, difference +0.002). The one FP16 norm scalar per token recovers FP16-equivalent quality.
+**Mode 1 — Layer-0-localized (outlier-driven).** Qwen2-7B only. Fixing Layer 0 alone rescues 99.97%. Breaking Layer 0 alone reproduces the catastrophe (+1368 even with other layers on nsep+pchan4). The cause is the Layer 0 K outlier (17.23×) dominating the per-row absmax.
 
-This transforms the Layer-0 specificity claim from correlational (observed in n=1) to **causally demonstrated by intervention**. Prevalence remains unknown, but the mechanism is isolated.
+**Mode 2 — Distributed (norm-variation-driven).** Pythia-6.9B, Pythia-12B, Qwen2.5-14B. Fixing Layer 0 alone rescues under 5%. Damage is spread across all layers from per-token norm variation fitting poorly into per-row absmax scales.
 
-### Practical Implication: Two Equally-Safe Deployment Options
+### Why nsep+pchan4 works universally
 
-Within our evidence, either policy handles the pathology:
+The two-mode separation mechanistically explains why the two components are both required for the 744× improvement on Qwen2-7B:
 
-- **(a) Uniform**: apply nsep+pchan4 to all layers. Simplest default.
-- **(b) Layer-0 selective**: apply nsep+pchan4 only to Layer 0, naive INT4 elsewhere. Preserves 27/28 of naive INT4's per-layer compute saving; quality indistinguishable from (a) within 0.33 ΔPPL on Qwen2-7B.
+- **Norm separation** targets Mode 2 (decouples magnitude from direction).
+- **Per-channel quantization** targets Mode 1 (isolates outlier channels).
 
-The choice is a throughput/simplicity trade-off, not a quality trade-off.
+Neither alone covers both modes. The conjunction does.
+
+### Practical diagnostic and deployment
+
+| Profile | Recommended policy |
+|---------|:-------------------|
+| K_max at Layer 0 ≥ 15× | **Mode 1 suspected**: Layer-0-selective nsep+pchan4 (27-of-28 layers remain under naive INT4) is sufficient. |
+| K_max at Layer 0 < 10× but naive INT4 still degrades | **Mode 2 suspected**: Uniform nsep+pchan4 is required because no single layer dominates. |
+| Profile not audited | **Uniform nsep+pchan4** is the safe default — covers both modes. |
 
 ## Why It Works
 
@@ -170,12 +174,13 @@ A production deployment would additionally require a fused CUDA kernel for quant
 
 ## Paper
 
-📄 **[Norm-Separated Quantization: A Training-Free Fix for KV Cache INT4 Failures](paper/arc_compression.pdf)** (21 pages, 5 figures, 8 appendices)
+📄 **[Norm-Separated Quantization: A Training-Free Fix for KV Cache INT4 Failures](paper/arc_compression.pdf)** (23 pages, 5 figures, 8 appendices)
 
 **V3 additions** (April 17, 2026):
 - Appendix H: K/V Outlier Asymmetry across 11 models from six vendors (Meta, Google, Microsoft, Mistral AI, DeepSeek, Alibaba), with mechanistic interpretation of K-vs-V asymmetry.
-- Appendix H.5: Causal isolation of Layer 0 via selective-compression experiment (**99.97% rescue by fixing Layer 0 alone**, catastrophe preserved by breaking Layer 0 alone). Also adds GPT-J-6B natural control (K_max=18.15× at Layer 1, clean under naive INT4).
-- Strengthened Limitations and Practical Implication sections: the N=1 observational concern is tempered by causal evidence from intervention, and two equally-safe deployment options (uniform or Layer-0-selective) are presented.
+- Appendix H.5: Causal isolation of Layer 0 via selective-compression on Qwen2-7B (**99.97% rescue by fixing Layer 0 alone**, catastrophe preserved by breaking Layer 0 alone). GPT-J-6B natural control (K_max=18.15× at Layer 1, clean).
+- Appendix H.6 (new): Generalization experiment across 4 failing models that **empirically separates two KV-quantization failure modes** — Mode 1 (Layer-0-localized, outlier-driven) and Mode 2 (distributed, norm-variation-driven). Each mode requires a different fix; nsep+pchan4 is the conjunction that covers both.
+- Strengthened Limitations and Practical Implication sections with mode-aware deployment guidance.
 - Honest latency reporting (+21% Python decode) with expected path to zero via fused kernels.
 
 ## Repository Structure
