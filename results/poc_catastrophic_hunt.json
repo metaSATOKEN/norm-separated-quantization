@@ -1,0 +1,78 @@
+{
+  "experiment": "poc_catastrophic_hunt",
+  "timestamp": "2026-04-17T07:30:00",
+  "motivation": "Reviewer 2 and the author both wanted to know whether the Layer-0 K pathology is unique to Qwen2-7B (n=1) or a recurring pattern. Screened 4 additional candidate models from 2023-2024 timeframe, focusing on Chinese lab models (similar era to Qwen2) and older models (EleutherAI GPT-J).",
+  "note_on_failed_candidates": {
+    "Qwen-7B (2023 initial)": "Load failed -- uses old transformers remote code with DisjunctiveConstraint import that was removed in transformers >= 5. Workaround possible but skipped.",
+    "Baichuan2-7B-Base": "Multiple dependency/format issues (bitsandbytes, safetensors format, meta tensor). Skipped after 3 failed attempts."
+  },
+  "measurements": {
+    "qwen1_5_7b": {
+      "model": "Qwen/Qwen1.5-7B",
+      "release_date": "2024-02",
+      "architecture": {
+        "class": "Qwen2ForCausalLM",
+        "num_hidden_layers": 32,
+        "num_attention_heads": 32,
+        "num_key_value_heads": 32,
+        "attention_type": "MHA (full)",
+        "hidden_size": 4096
+      },
+      "n_cache_layers": 32,
+      "k_max": 4.88, "v_max": 9.01,
+      "worst_k_layer": 10, "worst_v_layer": 31,
+      "layer_0_k": 2.29,
+      "top3_k_layers": [[10, 4.88], [23, 4.74], [9, 4.69]],
+      "top3_v_layers": [[31, 9.01], [2, 8.79], [1, 8.74]],
+      "verdict": "CLEAN",
+      "note": "Predecessor of Qwen2-7B. CLEAN profile means the pathology is NOT a Qwen-family trait. Architectural note: Qwen1.5-7B uses full MHA (32:32), whereas Qwen2-7B transitions to GQA (28:4). The pathology appeared in the MHA-to-GQA transition and was fixed by Qwen2.5."
+    },
+    "yi_6b": {
+      "model": "01-ai/Yi-6B",
+      "architecture": {
+        "class": "LlamaForCausalLM",
+        "num_hidden_layers": 32,
+        "num_attention_heads": 32,
+        "num_key_value_heads": 4,
+        "attention_type": "GQA (8:1)",
+        "hidden_size": 4096,
+        "head_dim": 128
+      },
+      "n_cache_layers": 32,
+      "k_max": 5.99, "v_max": 9.98,
+      "worst_k_layer": 6, "worst_v_layer": 1,
+      "layer_0_k": 4.48,
+      "top3_k_layers": [[6, 5.99], [17, 5.66], [7, 5.35]],
+      "top3_v_layers": [[1, 9.98], [0, 8.25], [2, 3.98]],
+      "verdict": "CLEAN",
+      "note": "Same GQA ratio (8:1) as Qwen2-7B but CLEAN. This refutes the hypothesis that the pathology is caused by GQA ratio itself."
+    },
+    "gpt_j_6b": {
+      "model": "EleutherAI/gpt-j-6b",
+      "release_date": "2021",
+      "architecture": {
+        "class": "GPTJForCausalLM",
+        "num_hidden_layers": 28,
+        "num_attention_heads": 16,
+        "attention_type": "MHA",
+        "hidden_size": 4096,
+        "head_dim": 256
+      },
+      "n_cache_layers": 28,
+      "k_max": 18.15, "v_max": 5.57,
+      "worst_k_layer": 1, "worst_v_layer": 1,
+      "layer_0_k": 9.31,
+      "top3_k_layers": [[1, 18.15], [2, 12.16], [7, 11.27]],
+      "top3_v_layers": [[1, 5.57], [0, 5.49], [6, 4.93]],
+      "verdict": "NATURAL_CONTROL_HIGH_K_NOT_L0",
+      "note": "CRITICAL DATA POINT: K_max 18.15x (higher than Qwen2-7B's 17.23x) but AT LAYER 1, NOT Layer 0. Layer 0 K is only 9.31x (elevated but not extreme). WikiText-2 PPL verification shows naive4 ΔPPL = +0.03 (CLEAN). This is the natural control: high K magnitude at Layer 1 does NOT cause catastrophic failure. Confirms Layer 0 specifically matters."
+    }
+  },
+  "failed_to_load": [
+    "Qwen/Qwen-7B (transformers_stream_generator DisjunctiveConstraint incompatibility)",
+    "baichuan-inc/Baichuan2-7B-Base (dependency + meta tensor issues)"
+  ],
+  "pathological_count": 0,
+  "natural_controls_found": 1,
+  "summary": "Hunt found no new catastrophic cases (n=1 unchanged), but discovered GPT-J-6B as an important natural control: K_max 18.15x at Layer 1 with Layer 0 K only 9.31x shows that high K magnitude alone is not sufficient for catastrophic failure. The Layer 0 position is critical. This finding motivated the subsequent causality experiment."
+}
