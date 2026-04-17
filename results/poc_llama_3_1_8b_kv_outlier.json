@@ -1,0 +1,35 @@
+{
+  "experiment": "poc_llama_3_1_8b_kv_outlier",
+  "timestamp": "2026-04-17T04:00:00",
+  "motivation": "Extend K/V outlier asymmetry sample to Meta Llama family. Llama 3.1 8B is the primary mainstream 8B-class reference to compare with Qwen2-7B (catastrophic), Mistral-7B (safe), Qwen2.5-14B (safe), Phi-3-mini (safe), DeepSeek-7B (safe).",
+  "model": "meta-llama/Llama-3.1-8B-Instruct",
+  "architecture": {
+    "class": "LlamaForCausalLM",
+    "num_hidden_layers": 32,
+    "num_attention_heads": 32,
+    "num_key_value_heads": 8,
+    "attention_type": "GQA (4:1)",
+    "head_dim": 128,
+    "hidden_size": 4096,
+    "vocab_size": 128256
+  },
+  "probe_tokens": 202,
+  "n_cache_layers": 32,
+  "outlier": {
+    "k_max": 8.81,
+    "v_max": 4.32,
+    "worst_k_layer": 29,
+    "worst_v_layer": 0,
+    "layer_0_k": 3.09,
+    "top3_k_layers": [[29, 8.81], [25, 6.34], [16, 5.15]],
+    "top3_v_layers": [[0, 4.32], [6, 4.31], [24, 4.19]]
+  },
+  "status_predicted": "safe",
+  "findings": {
+    "cleanest_model_in_sample": "Llama-3.1-8B has the lowest V_max (4.32x) across all 10 models measured. Meta's training recipe produces remarkably uniform activation distributions.",
+    "late_layer_k_pattern": "K_max 8.81x at Layer 29 (second to last) mirrors the Qwen2.5-14B pattern (10.65x at Layer 30 of 48). Both safe based on our 8x-threshold + late-layer-tolerance hypothesis.",
+    "no_pathology": "Layer 0 K = 3.09x is far below the 15x pathological threshold.",
+    "comparison_with_qwen2_7b": "Both use GQA but Llama's GQA is 32:8 (4:1 ratio) vs Qwen2-7B's 28:4 (7:1 ratio). The ratio itself does not appear to cause the pathology -- training recipe dominates."
+  },
+  "pathology_rate_updated": "1 of 10 models (Qwen2-7B only). All other vendors (Meta, Google, Microsoft, Mistral, DeepSeek, Alibaba post-v2.5) exhibit controlled outlier patterns."
+}

@@ -209,14 +209,17 @@ llama_3b = measure_model(
 # === CELL L5 === Full 8-model summary
 # =============================================================
 
-# Prior 6 models
+# Prior 9 models (6 measured NIAH + 3 predicted from Phi/DeepSeek)
 prior = [
-    {"label": "Qwen2-7B",          "k_max": 17.23, "v_max": 6.09,  "layer_0_k": 17.23, "niah": "0/26",  "status": "catastrophic"},
-    {"label": "Qwen2.5-14B",       "k_max": 10.65, "v_max": 7.71,  "layer_0_k": None,  "niah": "26/26", "status": "safe"},
-    {"label": "Mistral-7B",        "k_max": 6.17,  "v_max": 16.47, "layer_0_k": None,  "niah": "15/15", "status": "safe"},
-    {"label": "Gemma 4 E2B-it",    "k_max": 5.56,  "v_max": 7.48,  "layer_0_k": None,  "niah": "16/16", "status": "safe"},
-    {"label": "Gemma 4 26B-A4B",   "k_max": 6.82,  "v_max": 10.22, "layer_0_k": None,  "niah": "21/21", "status": "safe"},
-    {"label": "Gemma 4 31B-it",    "k_max": 8.92,  "v_max": 39.63, "layer_0_k": 6.59,  "niah": "21/21", "status": "safe"},
+    {"label": "Qwen2-7B",                 "k_max": 17.23, "v_max": 6.09,  "layer_0_k": 17.23, "niah": "0/26",  "status": "catastrophic"},
+    {"label": "Qwen2.5-14B",              "k_max": 10.65, "v_max": 7.71,  "layer_0_k": None,  "niah": "26/26", "status": "safe"},
+    {"label": "Mistral-7B",               "k_max": 6.17,  "v_max": 16.47, "layer_0_k": None,  "niah": "15/15", "status": "safe"},
+    {"label": "Gemma 4 E2B-it",           "k_max": 5.56,  "v_max": 7.48,  "layer_0_k": None,  "niah": "16/16", "status": "safe"},
+    {"label": "Gemma 4 26B-A4B",          "k_max": 6.82,  "v_max": 10.22, "layer_0_k": None,  "niah": "21/21", "status": "safe"},
+    {"label": "Gemma 4 31B-it",           "k_max": 8.92,  "v_max": 39.63, "layer_0_k": 6.59,  "niah": "21/21", "status": "safe"},
+    {"label": "Phi-3-mini-4k-instruct",   "k_max": 5.85,  "v_max": 24.37, "layer_0_k": 4.33,  "niah": "TBD",   "status": "safe (pred)"},
+    {"label": "Phi-3-medium-4k-instruct", "k_max": 5.67,  "v_max": 34.99, "layer_0_k": 2.82,  "niah": "TBD",   "status": "safe (pred)"},
+    {"label": "DeepSeek-LLM-7B-Chat",     "k_max": 9.07,  "v_max": 10.04, "layer_0_k": 7.45,  "niah": "TBD",   "status": "safe (pred)"},
 ]
 
 # New measurements
@@ -231,9 +234,9 @@ new_measured = [
 
 all_models = prior + new_measured
 
-print("\n" + "="*85)
-print("COMPLETE 8-MODEL K vs V TABLE")
-print("="*85)
+print("\n" + "="*95)
+print("COMPLETE 11-MODEL K vs V TABLE")
+print("="*95)
 print(f"  {'Model':<25} | {'K_max':>6} | {'V_max':>6} | {'L0 K':>6} | {'NIAH':>7} | Status")
 print(f"  {'-'*25} + {'-'*6} + {'-'*6} + {'-'*6} + {'-'*7} + {'-'*15}")
 for d in all_models:
