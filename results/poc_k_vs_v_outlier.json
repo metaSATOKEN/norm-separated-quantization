@@ -59,6 +59,18 @@
       "worst_v_layer": 22,
       "niah_prior": "21/21 all methods",
       "status": "safe"
+    },
+    "gemma_4_31b": {
+      "model": "google/gemma-4-31B-it",
+      "n_cache_layers": 60,
+      "k_max": 8.92,
+      "v_max": 39.63,
+      "worst_k_layer": 53,
+      "worst_v_layer": 12,
+      "layer_0_k": 6.59,
+      "niah_measured": "21/21 all methods",
+      "status": "safe",
+      "note": "NEW RECORD V outlier (2.4x higher than prior max of Mistral-7B). Still safe -- decisive evidence for K/V asymmetry hypothesis."
     }
   },
   "summary_table": [
@@ -66,11 +78,12 @@
     {"model": "Qwen2.5-14B",      "k_max": 10.65, "v_max": 7.71,  "niah": "26/26", "status": "safe"},
     {"model": "Mistral-7B",       "k_max": 6.17,  "v_max": 16.47, "niah": "15/15", "status": "safe"},
     {"model": "Gemma 4 E2B-it",   "k_max": 5.56,  "v_max": 7.48,  "niah": "16/16", "status": "safe"},
-    {"model": "Gemma 4 26B-A4B",  "k_max": 6.82,  "v_max": 10.22, "niah": "21/21", "status": "safe"}
+    {"model": "Gemma 4 26B-A4B",  "k_max": 6.82,  "v_max": 10.22, "niah": "21/21", "status": "safe"},
+    {"model": "Gemma 4 31B-it",   "k_max": 8.92,  "v_max": 39.63, "niah": "21/21", "status": "safe"}
   ],
   "findings": {
     "v_outliers_tolerated": {
-      "evidence": "Mistral-7B V_max 16.47x at Layer 0 remains safe (15/15 NIAH).",
+      "evidence": "Gemma 4 31B V_max 39.63x at Layer 12 remains safe (21/21 NIAH). Prior: Mistral-7B V_max 16.47x at Layer 0 also safe. V outlier tolerance extends to at least 39.63x in our sample.",
       "mechanism": "V is used only in the weighted-sum readout of attention. Per-row quantization errors in V cause noisy values at the correct attention locations, but do not corrupt attention structure itself."
     },
     "late_layer_k_outliers_tolerated": {
