@@ -1,0 +1,64 @@
+{
+  "experiment": "poc_gemma4_main_eval_e2b",
+  "model": "google/gemma-4-E2B-it",
+  "timestamp": "2026-04-16T16:55:34",
+  "architecture": {
+    "num_hidden_layers": 35,
+    "kv_cache_layers_exposed": 15,
+    "shared_kv_layers": 20,
+    "num_key_value_heads": 1,
+    "head_dim": 256,
+    "vocab_size": 262144
+  },
+  "outlier_phase1": {
+    "k_max_head": 5.56,
+    "v_max_head": 7.48,
+    "overall_max": 7.48,
+    "worst_layer": 9
+  },
+  "niah_multi": [
+    {
+      "n_filler": 10, "n_needles": 3, "tokens": 232,
+      "methods": {
+        "baseline": {"found": 3, "total": 3},
+        "naive4": {"found": 3, "total": 3},
+        "nsep+pchan4": {"found": 3, "total": 3}
+      }
+    },
+    {
+      "n_filler": 20, "n_needles": 3, "tokens": 370,
+      "methods": {
+        "baseline": {"found": 3, "total": 3},
+        "naive4": {"found": 3, "total": 3},
+        "nsep+pchan4": {"found": 3, "total": 3}
+      }
+    },
+    {
+      "n_filler": 30, "n_needles": 5, "tokens": 546,
+      "methods": {
+        "baseline": {"found": 5, "total": 5},
+        "naive4": {"found": 5, "total": 5},
+        "nsep+pchan4": {"found": 5, "total": 5}
+      }
+    },
+    {
+      "n_filler": 50, "n_needles": 5, "tokens": 804,
+      "methods": {
+        "baseline": {"found": 5, "total": 5},
+        "naive4": {"found": 5, "total": 5},
+        "nsep+pchan4": {"found": 5, "total": 5}
+      }
+    }
+  ],
+  "niah_totals": {
+    "baseline": "16/16",
+    "naive4": "16/16",
+    "nsep+pchan4": "16/16"
+  },
+  "ppl_chat": {
+    "baseline": {"nll": 3.338, "ppl": 28.15, "tokens": 141},
+    "naive4": {"nll": 3.303, "ppl": 27.18, "tokens": 141, "delta": -0.97},
+    "nsep+pchan4": {"nll": 3.105, "ppl": 22.31, "tokens": 141, "delta": -5.84}
+  },
+  "finding": "Gemma 4 E2B-it at V_max 7.48x falls in the naive-safe category. All methods achieve perfect needle retrieval (16/16). PPL measurements on 141 chat tokens are within sample noise; no meaningful degradation from naive4."
+}

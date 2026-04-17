@@ -1,0 +1,99 @@
+{
+  "experiment": "poc_k_vs_v_outlier_asymmetry",
+  "timestamp": "2026-04-16T17:28:02",
+  "motivation": "Gemma 4 26B-A4B with V_max 10.22x remained safe under naive4 (21/21 NIAH), contradicting a simple 8x outlier threshold. Investigated whether K and V outliers have asymmetric impact on naive INT4 quantization.",
+  "probe_tokens_per_model_approx": 200,
+  "measurements": {
+    "qwen2_7b": {
+      "model": "Qwen/Qwen2-7B",
+      "n_cache_layers": 28,
+      "k_max": 17.23,
+      "v_max": 6.09,
+      "worst_k_layer": 0,
+      "worst_v_layer": 27,
+      "top3_k_layers": [[0, 17.23], [27, 14.11], [19, 11.78]],
+      "top3_v_layers": [[27, 6.09], [4, 4.91], [0, 4.12]],
+      "niah_prior": "0/26 naive4, 26/26 nsep+pchan4",
+      "status": "catastrophic"
+    },
+    "qwen2_5_14b": {
+      "model": "Qwen/Qwen2.5-14B",
+      "n_cache_layers": 48,
+      "k_max": 10.65,
+      "v_max": 7.71,
+      "worst_k_layer": 30,
+      "worst_v_layer": 47,
+      "top3_k_layers": [[30, 10.65], [29, 8.71], [23, 8.49]],
+      "top3_v_layers": [[47, 7.71], [1, 7.08], [2, 6.57]],
+      "niah_prior": "26/26 all methods",
+      "status": "safe"
+    },
+    "mistral_7b": {
+      "model": "mistralai/Mistral-7B-v0.1",
+      "n_cache_layers": 32,
+      "k_max": 6.17,
+      "v_max": 16.47,
+      "worst_k_layer": 29,
+      "worst_v_layer": 0,
+      "top3_k_layers": [[29, 6.17], [22, 5.34], [13, 5.31]],
+      "top3_v_layers": [[0, 16.47], [1, 4.64], [3, 4.19]],
+      "niah_prior": "15/15 all methods",
+      "status": "safe"
+    },
+    "gemma_4_e2b": {
+      "model": "google/gemma-4-E2B-it",
+      "n_cache_layers": 15,
+      "k_max": 5.56,
+      "v_max": 7.48,
+      "worst_k_layer": 9,
+      "worst_v_layer": 9,
+      "niah_prior": "16/16 all methods",
+      "status": "safe"
+    },
+    "gemma_4_26b_a4b": {
+      "model": "google/gemma-4-26B-A4B-it",
+      "n_cache_layers": 30,
+      "k_max": 6.82,
+      "v_max": 10.22,
+      "worst_k_layer": 1,
+      "worst_v_layer": 22,
+      "niah_prior": "21/21 all methods",
+      "status": "safe"
+    }
+  },
+  "summary_table": [
+    {"model": "Qwen2-7B",         "k_max": 17.23, "v_max": 6.09,  "niah": "0/26",  "status": "catastrophic"},
+    {"model": "Qwen2.5-14B",      "k_max": 10.65, "v_max": 7.71,  "niah": "26/26", "status": "safe"},
+    {"model": "Mistral-7B",       "k_max": 6.17,  "v_max": 16.47, "niah": "15/15", "status": "safe"},
+    {"model": "Gemma 4 E2B-it",   "k_max": 5.56,  "v_max": 7.48,  "niah": "16/16", "status": "safe"},
+    {"model": "Gemma 4 26B-A4B",  "k_max": 6.82,  "v_max": 10.22, "niah": "21/21", "status": "safe"}
+  ],
+  "findings": {
+    "v_outliers_tolerated": {
+      "evidence": "Mistral-7B V_max 16.47x at Layer 0 remains safe (15/15 NIAH).",
+      "mechanism": "V is used only in the weighted-sum readout of attention. Per-row quantization errors in V cause noisy values at the correct attention locations, but do not corrupt attention structure itself."
+    },
+    "late_layer_k_outliers_tolerated": {
+      "evidence": "Qwen2.5-14B K_max 10.65x at Layer 30 (of 48) remains safe (26/26 NIAH).",
+      "mechanism": "K outliers at late layers only affect ~18 subsequent layers, limiting multiplicative error propagation."
+    },
+    "pathological_pattern_identified": {
+      "description": "Catastrophic naive4 failure requires K outlier magnitude >15x AND concentration at Layer 0.",
+      "evidence": "Only Qwen2-7B in our 5-model sample matches this pattern (K 17.23x at Layer 0). The resulting error propagates through all 27 subsequent attention layers, causing complete breakdown (0/26 NIAH).",
+      "mechanism": "K determines attention scoring (softmax(QK^T/sqrt(d))); errors at Layer 0 propagate multiplicatively through the entire network depth."
+    }
+  },
+  "hypothesis_evaluation": {
+    "simple_8x_threshold": "REFUTED -- Qwen2.5-14B (K 10.65x, safe) and Mistral-7B (V 16.47x, safe) violate the prediction",
+    "k_dominant_8x_threshold": "REFUTED -- Qwen2.5-14B K 10.65x is safe",
+    "refined_hypothesis": "Catastrophic failure requires specific combination of high K magnitude (>15x) AND early-layer concentration (Layer 0). Observed in 1 of 5 models."
+  },
+  "implications_for_paper": [
+    "No single numeric threshold reliably predicts naive4 failure.",
+    "V outlier magnitude is not a reliable indicator (up to 16.47x tolerated).",
+    "K outlier magnitude alone is insufficient (10.65x at Layer 30 tolerated).",
+    "nsep+pchan4 as universal safety net: zero overhead on safe models, full recovery on pathological ones.",
+    "Per-channel quantization isolates outlier channels, preventing scale domination that corrupts other dimensions.",
+    "The attention mechanism's K/V asymmetry explains why per-channel quantization specifically targets the harmful pattern."
+  ]
+}

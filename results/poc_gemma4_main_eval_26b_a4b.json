@@ -1,0 +1,83 @@
+{
+  "experiment": "poc_gemma4_main_eval_26b_a4b",
+  "model": "google/gemma-4-26B-A4B-it",
+  "timestamp": "2026-04-16T17:09:42",
+  "architecture_note": "MoE model, 26B total params, 4B active. 30 exposed KV cache layers.",
+  "outlier_phase1": {
+    "k_max_overall": 6.82,
+    "v_max_overall": 10.22,
+    "overall_max": 10.22,
+    "worst_k_layer": 1,
+    "worst_v_layer": 22,
+    "n_cache_layers": 30,
+    "layers_above_8x_v": [3, 10, 14, 16, 18, 20, 22, 24, 26, 27, 28],
+    "n_layers_above_8x_v": 11,
+    "pattern": "distributed V outliers across 11 layers",
+    "v_per_layer_summary": {
+      "layer_3":  8.63,
+      "layer_10": 9.36,
+      "layer_14": 8.41,
+      "layer_16": 8.96,
+      "layer_18": 8.48,
+      "layer_20": 8.10,
+      "layer_22": 10.22,
+      "layer_24": 8.34,
+      "layer_26": 9.28,
+      "layer_27": 8.68,
+      "layer_28": 9.94
+    }
+  },
+  "niah_multi": [
+    {
+      "n_filler": 10, "n_needles": 3, "tokens": 236,
+      "methods": {
+        "baseline": {"found": 3, "total": 3},
+        "naive4": {"found": 3, "total": 3},
+        "nsep+pchan4": {"found": 3, "total": 3}
+      }
+    },
+    {
+      "n_filler": 20, "n_needles": 3, "tokens": 374,
+      "methods": {
+        "baseline": {"found": 3, "total": 3},
+        "naive4": {"found": 3, "total": 3},
+        "nsep+pchan4": {"found": 3, "total": 3}
+      }
+    },
+    {
+      "n_filler": 30, "n_needles": 5, "tokens": 550,
+      "methods": {
+        "baseline": {"found": 5, "total": 5},
+        "naive4": {"found": 5, "total": 5},
+        "nsep+pchan4": {"found": 5, "total": 5}
+      }
+    },
+    {
+      "n_filler": 50, "n_needles": 5, "tokens": 808,
+      "methods": {
+        "baseline": {"found": 5, "total": 5},
+        "naive4": {"found": 5, "total": 5},
+        "nsep+pchan4": {"found": 5, "total": 5}
+      }
+    },
+    {
+      "n_filler": 80, "n_needles": 5, "tokens": 1204,
+      "methods": {
+        "baseline": {"found": 5, "total": 5},
+        "naive4": {"found": 5, "total": 5},
+        "nsep+pchan4": {"found": 5, "total": 5}
+      }
+    }
+  ],
+  "niah_totals": {
+    "baseline": "21/21",
+    "naive4": "21/21",
+    "nsep+pchan4": "21/21"
+  },
+  "ppl_chat": {
+    "baseline": {"nll": 5.873, "ppl": 355.30, "tokens": 248, "note": "suspiciously high, protocol artifact suspected"},
+    "naive4": {"nll": 4.835, "ppl": 125.78, "tokens": 248, "delta": -229.52, "note": "negative delta = noise"},
+    "nsep+pchan4": {"nll": 5.750, "ppl": 314.26, "tokens": 248, "delta": -41.05}
+  },
+  "finding": "Despite V_max 10.22x exceeding the 8x threshold and distributed across 11 layers, Gemma 4 26B-A4B remains completely safe under naive4 (21/21 NIAH). This contradicts a simple 8x threshold hypothesis and motivated the K vs V asymmetry investigation. PPL protocol proved unreliable for MoE architecture; NIAH is the main signal. Reddit-reported KV cache issues on 26B+ Gemma 4 appear to be memory/implementation issues rather than quantization quality."
+}

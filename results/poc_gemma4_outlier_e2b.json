@@ -1,0 +1,45 @@
+{
+  "experiment": "poc_gemma4_outlier_e2b",
+  "model": "google/gemma-4-E2B-it",
+  "timestamp": "2026-04-16T15:00:00",
+  "probe_tokens": 310,
+  "architecture": {
+    "class": "Gemma4ForConditionalGeneration",
+    "num_hidden_layers": 35,
+    "kv_cache_layers_exposed": 15,
+    "shared_kv_layers_inferred": 20,
+    "num_key_value_heads": 1,
+    "num_attention_heads": 8,
+    "head_dim": 256,
+    "hidden_size": 1536,
+    "vocab_size": 262144,
+    "tie_word_embeddings": true
+  },
+  "per_layer": [
+    {"layer": 0,  "k_avg": 4.18, "k_max": 4.18, "v_avg": 4.76, "v_max": 4.76},
+    {"layer": 1,  "k_avg": 3.23, "k_max": 3.23, "v_avg": 4.99, "v_max": 4.99},
+    {"layer": 2,  "k_avg": 4.63, "k_max": 4.63, "v_avg": 5.39, "v_max": 5.39},
+    {"layer": 3,  "k_avg": 3.72, "k_max": 3.72, "v_avg": 4.38, "v_max": 4.38},
+    {"layer": 4,  "k_avg": 5.03, "k_max": 5.03, "v_avg": 7.27, "v_max": 7.27},
+    {"layer": 5,  "k_avg": 3.86, "k_max": 3.86, "v_avg": 5.58, "v_max": 5.58},
+    {"layer": 6,  "k_avg": 4.03, "k_max": 4.03, "v_avg": 5.40, "v_max": 5.40},
+    {"layer": 7,  "k_avg": 4.12, "k_max": 4.12, "v_avg": 5.61, "v_max": 5.61},
+    {"layer": 8,  "k_avg": 4.91, "k_max": 4.91, "v_avg": 5.76, "v_max": 5.76},
+    {"layer": 9,  "k_avg": 5.56, "k_max": 5.56, "v_avg": 7.48, "v_max": 7.48},
+    {"layer": 10, "k_avg": 5.40, "k_max": 5.40, "v_avg": 5.85, "v_max": 5.85},
+    {"layer": 11, "k_avg": 4.13, "k_max": 4.13, "v_avg": 5.11, "v_max": 5.11},
+    {"layer": 12, "k_avg": 3.78, "k_max": 3.78, "v_avg": 6.40, "v_max": 6.40},
+    {"layer": 13, "k_avg": 5.23, "k_max": 5.23, "v_avg": 5.57, "v_max": 5.57},
+    {"layer": 14, "k_avg": 2.49, "k_max": 2.49, "v_avg": 5.55, "v_max": 5.55}
+  ],
+  "summary": {
+    "k_avg_of_layer_means": 4.29,
+    "k_worst_head_in_any_layer": 5.56,
+    "v_avg_of_layer_means": 5.67,
+    "v_worst_head_in_any_layer": 7.48,
+    "worst_k_layer": 9,
+    "worst_v_layer": 9,
+    "overall_max_ratio": 7.48
+  },
+  "finding": "Gemma 4 E2B-it shows V outlier 7.48x at middle layer 9, just below the 8x threshold. Unlike Qwen2-7B (outliers concentrated at Layer 0), Gemma 4 concentrates outliers in middle layers. Only 15 exposed KV cache layers despite 35 total hidden layers, confirming Shared KV architecture with ~20 layers sharing KV from source layers."
+}
