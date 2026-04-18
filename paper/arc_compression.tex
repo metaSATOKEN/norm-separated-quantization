@@ -449,7 +449,10 @@ Our norm separation is complementary to existing KV cache compression techniques
 \section{Related Work}
 
 \textbf{KV cache quantization.}
-KIVI \citep{liu2024kivi} applies per-channel quantization to KV caches with Key in INT2 and Value in INT4, achieving near-lossless compression. KVQuant \citep{hooper2024kvquant} extends this to 10M+ context lengths with per-channel and per-token quantization strategies. GEAR \citep{kang2024gear} combines low-rank approximation with outlier-aware quantization. Our norm separation is orthogonal to all of these and could serve as an additional preprocessing step.
+KIVI \citep{liu2024kivi} applies per-channel quantization to KV caches with Key in INT2 and Value in INT4, achieving near-lossless compression. KVQuant \citep{hooper2024kvquant} extends this to 10M+ context lengths with per-channel and per-token quantization strategies. GEAR \citep{kang2024gear} combines low-rank approximation with outlier-aware quantization. SQuat \citep{dong2025squat} constrains quantization error to lie in a subspace orthogonal to the query, minimizing its impact on attention outputs. Our norm separation is orthogonal to all of these: they focus on \emph{how to quantize the KV tensor}, whereas we identify \emph{why the tensor is hard to quantize} (two failure modes, one of which is Layer-0-localized) and provide a matching preprocessing step.
+
+\textbf{Norm--direction decomposition.}
+The specific idea of storing the vector's L2 magnitude at high precision while quantizing the direction separately has been explored concurrently with our work. PolarQuant \citep{han2025polarquant} decomposes KV vectors via a recursive polar transformation after random orthogonal preconditioning, retaining the final scalar radius at full precision and quantizing hierarchical polar angles with k-means codebooks; it reports 4.2$\times$ compression on Llama-3.1-8B. TurboQuant \citep{cherapanamjeri2026turboquant} extends PolarQuant with a 1-bit QJL residual correction for 6$\times$ compression at 3 bits/coord. Our \texttt{nsep+pchan} shares the norm-separation structure but differs in three ways. (1)~The direction quantizer: we use data-independent per-channel absmax rounding, whereas PolarQuant/TurboQuant use codebook-based methods requiring calibration and preconditioning rotations. (2)~Primary evaluation: we evaluate 23 models across main sweep + K/V asymmetry study to identify and causally characterize the failure modes (Appendix~\ref{sec:kv_asymmetry}). (3)~Primary contribution axis: these prior methods optimize the compression engineering; our paper investigates when and why naive INT quantization breaks, with a simple baseline as demonstration. The two directions are complementary.
 
 \textbf{KV cache eviction and sparsity.}
 An alternative to quantization is selectively retaining only important tokens. H2O \citep{zhang2023h2o} identifies ``heavy-hitter'' tokens by cumulative attention score. Scissorhands \citep{liu2023scissorhands} exploits the persistence of token importance across layers. StreamingLLM \citep{xiao2024streaming} maintains attention sinks for infinite-length generation. SnapKV \citep{li2024snapkv} selects important KV entries per attention head. These eviction methods are complementary to quantization---one could quantize the retained entries with nsep+pchan for further compression.
@@ -893,6 +896,21 @@ Li, Y., Huang, Y., Yang, B., Venkitesh, B., Locatelli, A., et~al. (2024).
 Liu, Z., Yuan, J., Jin, H., Zhong, S., Xu, Z., Braverman, V., Chen, B., \& Hu, X. (2024).
 \newblock KIVI: A Tuning-Free Asymmetric 2bit Quantization for KV Cache.
 \newblock \emph{ICML 2024}. arXiv:2402.02750.
+
+\bibitem[Han et~al.(2025)]{han2025polarquant}
+Han, I., Wu, H., Ok, J., \& others. (2025).
+\newblock PolarQuant: Quantizing KV Caches with Polar Transformation.
+\newblock arXiv:2502.02617.
+
+\bibitem[Cherapanamjeri et~al.(2026)]{cherapanamjeri2026turboquant}
+Cherapanamjeri, Y., \& others. (2026).
+\newblock TurboQuant: Combining PolarQuant with QJL Residual Correction for Extreme KV Cache Compression.
+\newblock \emph{ICLR 2026}.
+
+\bibitem[Dong et~al.(2025)]{dong2025squat}
+Dong, H., \& others. (2025).
+\newblock SQuat: Subspace-orthogonal KV Cache Quantization.
+\newblock arXiv:2503.24358.
 
 \bibitem[Liu et~al.(2023b)]{liu2023scissorhands}
 Liu, Z., Desai, A., Liao, F., Wang, W., Xie, V., Xu, Z., Kyrillidis, A., \& Shrivastava, A. (2023).
